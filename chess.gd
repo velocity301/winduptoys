@@ -68,8 +68,10 @@ func _input(event):
 	if event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			if is_mouse_over:
-				var var1 = $BoardEdge.get_local_mouse_position()
-				print(var1)
+				var X_position = $BoardEdge.get_local_mouse_position().x
+				var Y_position = $BoardEdge.get_local_mouse_position().y
+				var row_col = (floor(Vector2(X_position+72,-Y_position+72)/CELL_WIDTH))
+				print(row_col)
 			else:
 				return
 

@@ -9,5 +9,5 @@
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="Board" parent="." instance=ExtResource("1_ricxw")]
-position = Vector2(-244, -5)
+position = Vector2(-240, 0)
 scale = Vector2(4, 4)
