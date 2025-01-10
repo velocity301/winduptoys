@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dl5r64meotog5"
-path="res://.godot/imported/black_rook.png-a1ab20af05c55702d3d393fc22dc583c.ctex"
+uid="uid://bbp7rddpm12lw"
+path="res://.godot/imported/P1Tank.png-3003fb6f78338ea6f26bebb17502d809.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Chess/black_rook.png"
-dest_files=["res://.godot/imported/black_rook.png-a1ab20af05c55702d3d393fc22dc583c.ctex"]
+source_file="res://Assets/P1Tank.png"
+dest_files=["res://.godot/imported/P1Tank.png-3003fb6f78338ea6f26bebb17502d809.ctex"]
 
 [params]
 

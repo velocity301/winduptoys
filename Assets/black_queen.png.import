@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bp7nlcgo0m45s"
-path="res://.godot/imported/turn-white.png-c2571014ad349037db5df5ae3cccd368.ctex"
+uid="uid://by60nmlqcvbm0"
+path="res://.godot/imported/black_queen.png-979fca28d3fe9a18ec2231362d64c348.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Chess/turn-white.png"
-dest_files=["res://.godot/imported/turn-white.png-c2571014ad349037db5df5ae3cccd368.ctex"]
+source_file="res://Assets/black_queen.png"
+dest_files=["res://.godot/imported/black_queen.png-979fca28d3fe9a18ec2231362d64c348.ctex"]
 
 [params]
 

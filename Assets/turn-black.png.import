@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dqxqehkt103l4"
-path="res://.godot/imported/white_bishop.png-c14fa7f2c562a7fce175371e1614ccf2.ctex"
+uid="uid://bkstr5xwo5ine"
+path="res://.godot/imported/turn-black.png-8feb6ce6c5b2ec7eddfc9189b98a16dd.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Chess/white_bishop.png"
-dest_files=["res://.godot/imported/white_bishop.png-c14fa7f2c562a7fce175371e1614ccf2.ctex"]
+source_file="res://Assets/turn-black.png"
+dest_files=["res://.godot/imported/turn-black.png-8feb6ce6c5b2ec7eddfc9189b98a16dd.ctex"]
 
 [params]
 
