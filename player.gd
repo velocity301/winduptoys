@@ -2,31 +2,41 @@ extends Node
 
 class_name Player
 # Called when the node enters the scene tree for the first time.
-@export var submitted: bool
-@export var unitType: String
-@export var orders: Array
-@export var income: int
-@export var money: int
-@export var memory: int
-@export var upgradeTier: int
-@export var is_upgrading: bool
-@export var unitDeck: Dictionary
+var submitted: bool
+var state: String
+var selectedUnit: String
+var orders: Array
+var income: int
+var money: int
+var memory: int
+var is_upgrading_memory: bool
+#var researchingUnit: String
+var currentlySpending: int
+var unitDeck: Dictionary
 
-func _init(unitDeck):
+#enum {
+	#INPUT_DISABLED,
+	#SELECTING_UNIT,
+	#UNLOCKING_UNIT,
+	#ISSUING_ORDERS, 	
+#}
+
+func _init(): #(selectedUnits: Dictionary)
 	self.submitted = false
-	self.unitType = ""
+	self.state = "SELECTING_UNIT"
+	self.selectedUnit = ""
 	self.orders = []
 	self.income = 1
 	self.money = 1
 	self.memory = 1
-	self.upgradeTier = 0
-	self.is_upgrading = false
-	self.selectedUnits = {
-		"N": "Unit 1",
-		"E": "Unit 2", 
-		"S": "Unit 3", 
-		"W": "Unit 4", 
-		"N2": "Unit 5",
-		"E2": "Unit 6", 
-		"S2": "Unit 7", 
-		"W2": "Unit 8"}
+	self.is_upgrading_memory = false
+	#self.researchingUnit = ""
+	self.currentlySpending = 0
+	self.unitDeck = {
+		"1": "Worker",
+		"2": "Soldier", 
+		"3": "Archer", 
+		"4": "Mage", 
+		"5": "Spy",
+		"6": "Builder", 
+		}

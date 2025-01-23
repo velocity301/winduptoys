@@ -6,40 +6,46 @@ const PLAYER = preload("res://player.tscn")
 const P1_SPAWN_POSITION: Vector2 = Vector2(0,0)
 const P2_SPAWN_POSITION: Vector2 = Vector2(7,7)
 const PLAYERCOUNT: int = 2
+const UPGRADE_COST = 1
+const UNIT_COSTS = [0,1,2,3,4,5,6]
+
 var players: Array = []
-var units = {
-	"N": "Unit 1",
-	"E": "Unit 2",
-	"S": "Unit 3",
-	"W": "Unit 4",
-	"N2": "Unit 5",
-	"E2": "Unit 6",
-	"S2": "Unit 7",
-	"W2": "Unit 8"
-}
 
 # "InputMapAction": ["ActionFunction","arg1", "arg2"]
-var action_mapping = {
-	"Test Action": ["test_action", "Do this"],
-	"Select Unit N": ["select_unit", units["N"]],
-	"Select Unit E": ["select_unit", units["E"]],
-	"Select Unit S": ["select_unit", units["S"]],
-	"Select Unit W": ["select_unit", units["W"]],
-	"Select Unit N2": ["select_unit", units["N2"]],
-	"Select Unit E2": ["select_unit", units["E2"]],
-	"Select Unit S2": ["select_unit", units["S2"]],
-	"Select Unit W2": ["select_unit", units["W2"]],
-	"Clear Orders": ["clear_orders"]
-}
-
+#var action_mapping = {
+	#"Test Action": ["test_action", "Do this"],
+	#"Select Unit N": ["select_unit", units["N"]],
+	#"Select Unit E": ["select_unit", units["E"]],
+	#"Select Unit S": ["select_unit", units["S"]],
+	#"Select Unit W": ["select_unit", units["W"]],
+	#"Select Unit N2": ["select_unit", units["N2"]],
+	#"Select Unit E2": ["select_unit", units["E2"]],
+	#"Select Unit S2": ["select_unit", units["S2"]],
+	#"Select Unit W2": ["select_unit", units["W2"]],
+	#"Clear Orders": ["clear_orders"]
+#}
 
 
 func _input(event):
 	var playerIndex = event.device
 	if event.is_action_pressed("Test Action"):
 		test_action(playerIndex, "testing 123")
-	if event.is_action_pressed("Select Unit N"):
-		select_unit(playerIndex, units)
+	if event.is_action_pressed("Select Unit 1"):
+		select_unit(event.device, 1)
+	if event.is_action_pressed("Select Unit 2"):
+		select_unit(event.device, 2)
+	if event.is_action_pressed("Select Unit 3"):
+		select_unit(event.device, 3)
+	if event.is_action_pressed("Select Unit 4"):
+		select_unit(event.device, 4)
+	if event.is_action_pressed("Select Unit 5"):
+		select_unit(event.device, 5)
+	if event.is_action_pressed("Select Unit 6"):
+		select_unit(event.device, 6)
+	if event.is_action_pressed("Upgrade Memory"):
+		upgrade_memory(event.device)
+		
+		#select_unit(playerIndex, units)
 	#for action in action_mapping.keys():
 		#if event.is_action_pressed(action):
 			#var func_name = action_mapping[action][0]
@@ -54,19 +60,34 @@ func _input(event):
 			#call(func_name, playerIndex, arg)
 			#print_gamestate(players, playerIndex)
 			#break
-
 func test_action(playerIndex, action):
 	print(playerIndex)
 	print(action)
 
 #Actions
-func select_unit(playerIndex, unit: String):
-	players[playerIndex] = unit
+func select_unit(playerIndex, unit: int):
+	var availableMoney = players[playerIndex].money - players[playerIndex].currentlySpending
+	if availableMoney < UNIT_COSTS[unit]:
+		return 
+	if players[playerIndex].state == "SELECTING_UNIT":
+		players[playerIndex].selectedUnit = players[playerIndex].unitDeck[str(unit)]
+		players[playerIndex].currentlySpending += UNIT_COSTS[unit]
+		players[playerIndex].state = "ISSUING_ORDERS"
+	else: 
+		print("not in correct state")
 
-func upgrade(playerIndex):
-	if players[playerIndex].money > players[playerIndex].upgradeTier + 1:
-		players[playerIndex].upgradeTier += 1
-	else:
+func upgrade_memory(playerIndex):
+	var availableMoney = players[playerIndex].money - players[playerIndex].currentlySpending
+	var state = players[playerIndex].state
+	if state == "INPUT_DISABLED":
+		return
+	if players[playerIndex].is_upgrading_memory == true:
+		players[playerIndex].currentlySpending -= UPGRADE_COST
+		players[playerIndex].is_upgrading_memory = false
+	elif availableMoney >= UPGRADE_COST and players[playerIndex].is_upgrading_memory == false:
+		players[playerIndex].currentlySpending += UPGRADE_COST
+		players[playerIndex].is_upgrading_memory = true
+	elif availableMoney < UPGRADE_COST:
 		print("Insufficient Funds to Upgrade")
 
 func add_order(playerIndex, order: String):
@@ -80,27 +101,23 @@ func clear_orders(playerIndex):
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	pass
-	for player in range(PLAYERCOUNT): 
-		players.append(Player.new(units))
+	var player1 = Player.new()
+	var player2 = Player.new()
+	players.append(player1)
+	players.append(player2)
+	#for player in range(PLAYERCOUNT): 
+		#players.append(Player.new(units))
 
-func print_gamestate(players, playerIndex):
-	for player in players:
-		var outputString = ""
-		outputString+=str("Submitted: ")
-		outputString+=str(players[playerIndex].submitted)+"\n"
-		outputString+=str("Unit Type: ")
-		outputString+=str(players[playerIndex].unitType)+"\n"
-		outputString+=str("Orders: ")
-		outputString+=str(players[playerIndex].orders)+"\n"
-		outputString+=str("Income: ")
-		outputString+=str(players[playerIndex].income)+"\n"
-		outputString+=str("Money: ")
-		outputString+=str(players[playerIndex].money)+"\n"
-		outputString+=str("Memory: ")
-		outputString+=str(players[playerIndex].memory)+"\n"
-		outputString+=str("Upgrade Tier: ")
-		outputString+=str(players[playerIndex].upgradeTier)+"\n"
-		outputString+=str("is Upgrading: ")
-		outputString+=str(players[playerIndex].is_upgrading)+"\n"
-		print(outputString)
+func print_gamestate():
+	for playerIndex in range(2):
+		print(playerIndex)
+		#print("submitted: %s" % players[playerIndex].submitted)
+		print("state: %s" % players[playerIndex].state)
+		print("selectedUnit: %s" % players[playerIndex].selectedUnit)
+		#print("orders: %s" % str(players[playerIndex].orders))
+		#print("income: %d" % players[playerIndex].income)
+		print("money: %d" % players[playerIndex].money)
+		print("memory: %d" % players[playerIndex].memory)
+		print("is_upgrading_memory: %s" % players[playerIndex].is_upgrading_memory)
+		print("currentlySpending:  %s" % players[playerIndex].currentlySpending)
+		# #print("researchingUnit: %s" % players[playerIndex].researchingUnit)

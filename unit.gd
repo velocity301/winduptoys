@@ -4,12 +4,11 @@ extends Node2D
 class_name Unit
 
 # Properties for the unit
-@export var team: int
-@export var unitType: String
-@export var boardPosition: Vector2
-@export var legalMoves: Array = []
-@export var orders: Array = []
-@export var is_alive: bool
+var team: int
+var unitType: String
+var boardPosition: Vector2
+var orders: Array = []
+var is_alive: bool
 
 func _init(
 	team: int,
@@ -22,7 +21,6 @@ func _init(
 	self.orders = orders
 	self.is_alive = true
 	
-
 #func _ready():
 	#var sprite = Sprite2D.new() 
 	#sprite.texture = load("res://Assets/%s.png" % unitType)
