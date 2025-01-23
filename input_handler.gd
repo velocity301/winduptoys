@@ -28,6 +28,8 @@ var players: Array = []
 
 func _input(event):
 	var playerIndex = event.device
+	if players[event.device].state == "INPUT_DISABLED":
+		return
 	if event.is_action_pressed("Test Action"):
 		test_action(playerIndex, "testing 123")
 	if event.is_action_pressed("Select Unit 1"):
@@ -44,7 +46,10 @@ func _input(event):
 		select_unit(event.device, 6)
 	if event.is_action_pressed("Upgrade Memory"):
 		upgrade_memory(event.device)
+	if event.is_action_pressed("Submit Move"):
+		submit_move(event.device)
 		
+	
 		#select_unit(playerIndex, units)
 	#for action in action_mapping.keys():
 		#if event.is_action_pressed(action):
@@ -68,7 +73,8 @@ func test_action(playerIndex, action):
 func select_unit(playerIndex, unit: int):
 	var availableMoney = players[playerIndex].money - players[playerIndex].currentlySpending
 	if availableMoney < UNIT_COSTS[unit]:
-		return 
+		print("insufficient funds")
+		return
 	if players[playerIndex].state == "SELECTING_UNIT":
 		players[playerIndex].selectedUnit = players[playerIndex].unitDeck[str(unit)]
 		players[playerIndex].currentlySpending += UNIT_COSTS[unit]
@@ -78,8 +84,7 @@ func select_unit(playerIndex, unit: int):
 
 func upgrade_memory(playerIndex):
 	var availableMoney = players[playerIndex].money - players[playerIndex].currentlySpending
-	var state = players[playerIndex].state
-	if state == "INPUT_DISABLED":
+	if players[playerIndex].state == "INPUT_DISABLED":
 		return
 	if players[playerIndex].is_upgrading_memory == true:
 		players[playerIndex].currentlySpending -= UPGRADE_COST
@@ -89,6 +94,13 @@ func upgrade_memory(playerIndex):
 		players[playerIndex].is_upgrading_memory = true
 	elif availableMoney < UPGRADE_COST:
 		print("Insufficient Funds to Upgrade")
+
+func submit_move(playerIndex):
+	if players[playerIndex].state == "INPUT_DISABLED":
+		return
+	players[playerIndex].submitted = true
+	players[playerIndex].state = "INPUT_DISABLED"
+	# signal saying player is submitted
 
 func add_order(playerIndex, order: String):
 	if players[playerIndex].orders > players[playerIndex].memory:
@@ -112,12 +124,12 @@ func print_gamestate():
 	for playerIndex in range(2):
 		print(playerIndex)
 		#print("submitted: %s" % players[playerIndex].submitted)
-		print("state: %s" % players[playerIndex].state)
-		print("selectedUnit: %s" % players[playerIndex].selectedUnit)
+		#print("state: %s" % players[playerIndex].state)
+		#print("selectedUnit: %s" % players[playerIndex].selectedUnit)
 		#print("orders: %s" % str(players[playerIndex].orders))
 		#print("income: %d" % players[playerIndex].income)
-		print("money: %d" % players[playerIndex].money)
-		print("memory: %d" % players[playerIndex].memory)
+		#print("money: %d" % players[playerIndex].money)
+		#print("memory: %d" % players[playerIndex].memory)
 		print("is_upgrading_memory: %s" % players[playerIndex].is_upgrading_memory)
-		print("currentlySpending:  %s" % players[playerIndex].currentlySpending)
-		# #print("researchingUnit: %s" % players[playerIndex].researchingUnit)
+		#print("currentlySpending:  %s" % players[playerIndex].currentlySpending)
+		 #print("researchingUnit: %s" % players[playerIndex].researchingUnit)
