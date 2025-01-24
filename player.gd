@@ -18,7 +18,8 @@ var unitDeck: Dictionary
 	#INPUT_DISABLED,
 	#SELECTING_UNIT,
 	#UNLOCKING_UNIT,
-	#ISSUING_ORDERS, 	
+	#ISSUING_ORDERS,
+	#SUBMITTED_STANDBY, 	
 #}
 
 func _init(): #(selectedUnits: Dictionary)
@@ -27,8 +28,8 @@ func _init(): #(selectedUnits: Dictionary)
 	self.selectedUnit = ""
 	self.orders = []
 	self.income = 1
-	self.money = 1
-	self.memory = 1
+	self.money = 5
+	self.memory = 5
 	self.is_upgrading_memory = false
 	#self.researchingUnit = ""
 	self.currentlySpending = 0

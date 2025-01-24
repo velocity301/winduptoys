@@ -1,7 +1,7 @@
 extends Node2D
 
+@onready var board: Sprite2D = $"../Board"
 
-#signal p1 and p2 ready (unit(args), unit(args))
 const PLAYER = preload("res://player.tscn")
 const P1_SPAWN_POSITION: Vector2 = Vector2(0,0)
 const P2_SPAWN_POSITION: Vector2 = Vector2(7,7)
@@ -10,6 +10,8 @@ const UPGRADE_COST = 1
 const UNIT_COSTS = [0,1,2,3,4,5,6]
 
 var players: Array = []
+
+signal both_players_submitted  # Declare a signal
 
 # "InputMapAction": ["ActionFunction","arg1", "arg2"]
 #var action_mapping = {
@@ -48,23 +50,25 @@ func _input(event):
 		upgrade_memory(event.device)
 	if event.is_action_pressed("Submit Move"):
 		submit_move(event.device)
-		
-	
-		#select_unit(playerIndex, units)
-	#for action in action_mapping.keys():
-		#if event.is_action_pressed(action):
-			#var func_name = action_mapping[action][0]
-			#var args = [action_mapping[action]]
-			#call(func_name, playerIndex, args) #arg for arg in args)
-	#for action in action_mapping.keys():
-		#if event.is_action_pressed(action):  
-			#var playerIndex = event.device
-			#var func_name = action_mapping[action][0]
-			#var arg = action_mapping[action][1]
-			## Use call() to dynamically call the function
-			#call(func_name, playerIndex, arg)
-			#print_gamestate(players, playerIndex)
-			#break
+	if event.is_action_pressed("Back"):
+		back(event.device)
+	if event.is_action_pressed("Add Order N"):
+		add_order(event.device, "N")
+	if event.is_action_pressed("Add Order E"):
+		add_order(event.device, "E")
+	if event.is_action_pressed("Add Order S"):
+		add_order(event.device, "S")
+	if event.is_action_pressed("Add Order W"):
+		add_order(event.device, "W")
+	if event.is_action_pressed("Add Order AN"):
+		add_order(event.device, "AN")
+	if event.is_action_pressed("Add Order AE"):
+		add_order(event.device, "AE")
+	if event.is_action_pressed("Add Order AS"):
+		add_order(event.device, "AS")
+	if event.is_action_pressed("Add Order AW"):
+		add_order(event.device, "AW")
+
 func test_action(playerIndex, action):
 	print(playerIndex)
 	print(action)
@@ -75,13 +79,13 @@ func select_unit(playerIndex, unit: int):
 	if availableMoney < UNIT_COSTS[unit]:
 		print("insufficient funds")
 		return
-	if players[playerIndex].state == "SELECTING_UNIT":
-		players[playerIndex].selectedUnit = players[playerIndex].unitDeck[str(unit)]
-		players[playerIndex].currentlySpending += UNIT_COSTS[unit]
-		players[playerIndex].state = "ISSUING_ORDERS"
-	else: 
+	if players[playerIndex].state != "SELECTING_UNIT":
 		print("not in correct state")
-
+		return
+	players[playerIndex].selectedUnit = players[playerIndex].unitDeck[str(unit)]
+	players[playerIndex].currentlySpending += UNIT_COSTS[unit]
+	players[playerIndex].state = "ISSUING_ORDERS"
+	
 func upgrade_memory(playerIndex):
 	var availableMoney = players[playerIndex].money - players[playerIndex].currentlySpending
 	if players[playerIndex].state == "INPUT_DISABLED":
@@ -96,20 +100,48 @@ func upgrade_memory(playerIndex):
 		print("Insufficient Funds to Upgrade")
 
 func submit_move(playerIndex):
-	if players[playerIndex].state == "INPUT_DISABLED":
+	if players[playerIndex].state == "SUBMITTED_STANDBY" or players[playerIndex].state == "INPUT_DISABLED":
 		return
 	players[playerIndex].submitted = true
-	players[playerIndex].state = "INPUT_DISABLED"
-	# signal saying player is submitted
+	players[playerIndex].state = "SUBMITTED_STANDBY"
+	check_submissions()
+
+
+func check_submissions():
+	# Check if both players have submitted their orders
+	if players[0].submitted and players[1].submitted:
+		# Emit signal to notify the board that both players have submitted their orders
+		both_players_submitted.emit()
+		players[0].state = "INPUT_DISABLED"
+		players[1].state = "INPUT_DISABLED"
+
 
 func add_order(playerIndex, order: String):
-	if players[playerIndex].orders > players[playerIndex].memory:
+	if players[playerIndex].state != "ISSUING_ORDERS":
+		return
+	if players[playerIndex].orders.size() >= players[playerIndex].memory:
 		print("Memory Full")
+		return
 	else:
 		players[playerIndex].orders.append(order)
 
-func clear_orders(playerIndex):
-	players[playerIndex].orders = []
+func back(playerIndex):
+	if players[playerIndex].state == "SELECTING_UNIT":
+		players[playerIndex].selectedUnit = ""
+		players[playerIndex].is_upgrading_memory = false
+		players[playerIndex].currentlySpending = 0
+	elif players[playerIndex].state == "ISSUING_ORDERS":
+		if players[playerIndex].orders == []:
+			players[playerIndex].selectedUnit = ""
+			players[playerIndex].is_upgrading_memory = false
+			players[playerIndex].currentlySpending = 0
+			players[playerIndex].state = "SELECTING_UNIT"
+			return
+		else:
+			players[playerIndex].orders.pop_back()
+		players[playerIndex].orders = []
+	elif players[playerIndex].state == "SUBMITTED_STANDBY":
+		players[playerIndex].state = "ISSUING_ORDERS"
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -117,6 +149,7 @@ func _ready() -> void:
 	var player2 = Player.new()
 	players.append(player1)
 	players.append(player2)
+	#connect("both_players_submitted", get_node("$../Board"), "_on_both_players_submitted")
 	#for player in range(PLAYERCOUNT): 
 		#players.append(Player.new(units))
 
@@ -130,6 +163,6 @@ func print_gamestate():
 		#print("income: %d" % players[playerIndex].income)
 		#print("money: %d" % players[playerIndex].money)
 		#print("memory: %d" % players[playerIndex].memory)
-		print("is_upgrading_memory: %s" % players[playerIndex].is_upgrading_memory)
+		#print("is_upgrading_memory: %s" % players[playerIndex].is_upgrading_memory)
 		#print("currentlySpending:  %s" % players[playerIndex].currentlySpending)
 		 #print("researchingUnit: %s" % players[playerIndex].researchingUnit)

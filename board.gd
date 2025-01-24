@@ -7,6 +7,8 @@ const CELL_WIDTH = 18
 const UNIT = preload("res://unit.tscn")
 const TANK = preload("res://Assets/P1Tank.png")
 const TEXTURE_HOLDER = preload("res://texture_holder.tscn")
+@onready var input_handler: Node2D = $"../InputHandler"
+
 #Variables
 #negative numbers are black pieces 
 # 
@@ -27,15 +29,28 @@ func _ready() -> void:
 	for i in BOARD_SIZE:
 		board.append([null,null,null,null,null,null,null,null])
 
-	spawn_unit(1,"TANK", Vector2(2,2), ["Move_N","Move_W","Move_S"])
-	spawn_unit(1,"MAN", Vector2(1,2), ["Move_N","Move_W","Move_S"])
-	spawn_unit(2,"PENIS", Vector2(7,6), ["Move_N","Move_W","Move_S"])
-	spawn_unit(1,"ASDF", Vector2(7,7), ["Move_N","Move_W","Move_S"])
+	#input_handler.connect("both_players_submitted", self, "_on_both_players_submitted")
+	spawn_unit(1,"TANK", Vector2(2,2), ["N","W","S"])
+	spawn_unit(1,"MAN", Vector2(1,2), ["N","W","S"])
+	spawn_unit(2,"PENIS", Vector2(7,6), ["N","W","S"])
+	spawn_unit(1,"ASDF", Vector2(7,7), ["N","W","S"])
 	execute_orders(board, units)
 	
 	display_board()
 	
-		
+
+func _on_both_players_submitted():
+	print("Both players have submitted their orders!")
+	# Now you can handle the next steps, like starting the next phase of the game
+	# For example, you could transition to the next round, update the board, etc.
+	# Here, we will just print and call a function to process orders.
+	process_orders()
+	
+func process_orders():
+	# Implement the logic for processing orders after both players have submitted
+	# This could involve updating the game state, processing actions, etc.
+	pass
+	
 func boardPositionToLocalPosition(boardPosition: Vector2):
 	var localPosition = Vector2(0,0)
 	@warning_ignore("integer_division")
