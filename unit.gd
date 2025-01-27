@@ -12,6 +12,7 @@ var unitType: String
 var boardPosition: Vector2
 var orders: Array = []
 var is_alive: bool
+var has_registered_move: bool
 const UNIT_ORDERS = {
 	 "Worker": {
 		"N": Vector2(0, 1),
@@ -75,17 +76,6 @@ const UNIT_ORDERS = {
 	}
 }
 
-#func _init(
-	#team: int,
-	#unitType: String, 
-	#board_position: Vector2, 
-	#orders: Array):
-	#self.state = "IDLE"
-	#self.team = team
-	#self.unitType = unitType
-	#self.boardPosition = board_position
-	#self.orders = orders
-	#self.is_alive = true
 	
 func initialize(
 	team: int,
@@ -98,34 +88,55 @@ func initialize(
 	self.boardPosition = board_position
 	self.orders = orders
 	self.is_alive = true
+	has_registered_move = false
 	
+func _ready():
+	board.connect("turn_completed", _on_all_moves_completed)
 
-func _ready() -> void:
-	pass
-	
-	
-func execute_ability_order():
+# Executes ability orders (placeholder for specific logic)
+func execute_ability_order() -> void:
 	if self.unitType == "Worker":
-		pass # capture the mine underneath the worker
+		pass  # Capture the mine or perform other actions
 
-func execute_move_order():
-	var tween = create_tween()
-	var startPosition = board.boardPositionToLocalPosition(self.boardPosition)
-	var current_order = self.orders[0]
-	var move_vector = UNIT_ORDERS[self.unitType][current_order]
-	var target_position = self.boardPosition + move_vector
-	# TODO: check inbetween path squares here
-	if is_space_occupied(target_position): 
-		self.orders.pop_front()
+# Registers the move order with the board
+func execute_move_order() -> void:
+	if orders.size() == 0:
+		emit_signal("move_completed")
 		return
-	tween.tween_property(self, "position", board.boardPositionToLocalPosition(target_position), TWEEN_TIME)
-	self.boardPosition = target_position	
-	self.orders.pop_front()
+
+	# Only process the first order
+	if orders.size() > 0:
+		var current_order = orders[0]  # Get the first order
+		print("Executing move order: " + current_order)  # Debug
+
+		var move_vector = UNIT_ORDERS[unitType].get(current_order, Vector2.ZERO)
+		print("Move vector: " + str(move_vector))  # Debug
+
+		var target_position = boardPosition + move_vector
+		print("Target position (board): " + str(target_position))  # Debug
+
+		# Convert to local position
+		var local_target_position = board.boardPositionToLocalPosition(target_position)
+		print("Target position (local): " + str(local_target_position))  # Debug
+
+		# Register the move with the board
+		board.register_move(self, target_position)
+
+		# Remove the first order after it's executed
+		orders.pop_front()  # Remove the first order
+		print("Remaining orders: " + str(orders))  # Debug
+		self.has_registered_move = true
+	else:
+		print("No orders to execute.")
 
 
+# Checks if a space is occupied (considering vacated spaces from the board)
 func is_space_occupied(space: Vector2) -> bool:
-	for unit in board.units:
-		if unit.boardPosition == space:
-			print(str(unit.boardPosition) + " is occupied")
-			return true
-	return false
+	return board.is_space_occupied(space)
+
+func _on_all_moves_completed():
+	self.has_registered_move = false
+	self.state = "SELECTING_UNIT"
+
+# Signal emitted when a move is completed
+signal move_completed

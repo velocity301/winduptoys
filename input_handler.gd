@@ -152,9 +152,17 @@ func _ready() -> void:
 	var player2 = Player.new()
 	players.append(player1)
 	players.append(player2)
+	# Connect the turn_completed signal to a function in another script
+	board.connect("turn_completed", _on_turn_completed)
+
 	#connect("both_players_submitted", get_node("$../Board"), "_on_both_players_submitted")
 	#for player in range(PLAYERCOUNT): 
 		#players.append(Player.new(units))
+
+func _on_turn_completed():
+	print("Turn completed!")
+	# Handle any additional logic for after the turn ends (e.g., updating UI)
+
 
 func print_gamestate():
 	for playerIndex in range(2):
