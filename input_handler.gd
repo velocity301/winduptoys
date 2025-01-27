@@ -11,7 +11,7 @@ const UNIT_COSTS = [0,1,2,3,4,5,6]
 
 var players: Array = []
 
-signal both_players_submitted  # Declare a signal
+signal both_players_submitted(players: Array)  # Declare a signal
 
 # "InputMapAction": ["ActionFunction","arg1", "arg2"]
 #var action_mapping = {
@@ -32,42 +32,44 @@ func _input(event):
 	var playerIndex = event.device
 	if players[event.device].state == "INPUT_DISABLED":
 		return
-	if event.is_action_pressed("Test Action"):
-		test_action(playerIndex, "testing 123")
-	if event.is_action_pressed("Select Unit 1"):
-		select_unit(event.device, 1)
-	if event.is_action_pressed("Select Unit 2"):
-		select_unit(event.device, 2)
-	if event.is_action_pressed("Select Unit 3"):
-		select_unit(event.device, 3)
-	if event.is_action_pressed("Select Unit 4"):
-		select_unit(event.device, 4)
-	if event.is_action_pressed("Select Unit 5"):
-		select_unit(event.device, 5)
-	if event.is_action_pressed("Select Unit 6"):
-		select_unit(event.device, 6)
+	if players[event.device].state == "SELECTING_UNIT":
+		if event.is_action_pressed("Select Unit 1"):
+			select_unit(event.device, 1)
+		if event.is_action_pressed("Select Unit 2"):
+			select_unit(event.device, 2)
+		if event.is_action_pressed("Select Unit 3"):
+			select_unit(event.device, 3)
+		if event.is_action_pressed("Select Unit 4"):
+			select_unit(event.device, 4)
+		if event.is_action_pressed("Select Unit 5"):
+			select_unit(event.device, 5)
+		if event.is_action_pressed("Select Unit 6"):
+			select_unit(event.device, 6)
+	elif players[event.device].state == "ISSUING_ORDERS":
+		if event.is_action_pressed("Add Order N"):
+			add_order(event.device, "N")
+		if event.is_action_pressed("Add Order E"):
+			add_order(event.device, "E")
+		if event.is_action_pressed("Add Order S"):
+			add_order(event.device, "S")
+		if event.is_action_pressed("Add Order W"):
+			add_order(event.device, "W")
+		if event.is_action_pressed("Add Order AN"):
+			add_order(event.device, "AN")
+		if event.is_action_pressed("Add Order AE"):
+			add_order(event.device, "AE")
+		if event.is_action_pressed("Add Order AS"):
+			add_order(event.device, "AS")
+		if event.is_action_pressed("Add Order AW"):
+			add_order(event.device, "AW")
+	
 	if event.is_action_pressed("Upgrade Memory"):
 		upgrade_memory(event.device)
 	if event.is_action_pressed("Submit Move"):
 		submit_move(event.device)
 	if event.is_action_pressed("Back"):
 		back(event.device)
-	if event.is_action_pressed("Add Order N"):
-		add_order(event.device, "N")
-	if event.is_action_pressed("Add Order E"):
-		add_order(event.device, "E")
-	if event.is_action_pressed("Add Order S"):
-		add_order(event.device, "S")
-	if event.is_action_pressed("Add Order W"):
-		add_order(event.device, "W")
-	if event.is_action_pressed("Add Order AN"):
-		add_order(event.device, "AN")
-	if event.is_action_pressed("Add Order AE"):
-		add_order(event.device, "AE")
-	if event.is_action_pressed("Add Order AS"):
-		add_order(event.device, "AS")
-	if event.is_action_pressed("Add Order AW"):
-		add_order(event.device, "AW")
+	
 
 func test_action(playerIndex, action):
 	print(playerIndex)
@@ -85,6 +87,7 @@ func select_unit(playerIndex, unit: int):
 	players[playerIndex].selectedUnit = players[playerIndex].unitDeck[str(unit)]
 	players[playerIndex].currentlySpending += UNIT_COSTS[unit]
 	players[playerIndex].state = "ISSUING_ORDERS"
+
 	
 func upgrade_memory(playerIndex):
 	var availableMoney = players[playerIndex].money - players[playerIndex].currentlySpending
@@ -111,7 +114,7 @@ func check_submissions():
 	# Check if both players have submitted their orders
 	if players[0].submitted and players[1].submitted:
 		# Emit signal to notify the board that both players have submitted their orders
-		both_players_submitted.emit()
+		both_players_submitted.emit(players)
 		players[0].state = "INPUT_DISABLED"
 		players[1].state = "INPUT_DISABLED"
 

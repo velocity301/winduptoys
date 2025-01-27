@@ -1,8 +1,10 @@
-[gd_scene load_steps=2 format=3 uid="uid://b2vexd4d5si8g"]
+[gd_scene load_steps=3 format=3 uid="uid://b2vexd4d5si8g"]
 
 [ext_resource type="Script" path="res://unit.gd" id="1_8quji"]
+[ext_resource type="Texture2D" uid="uid://d1x1vpg5dd74m" path="res://Assets/black_king.png" id="2_s3cya"]
 
 [node name="Unit" type="Node2D"]
 script = ExtResource("1_8quji")
 
 [node name="UnitSprite" type="Sprite2D" parent="."]
+texture = ExtResource("2_s3cya")
