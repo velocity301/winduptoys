@@ -1,6 +1,9 @@
 extends Node
 
+
+
 class_name Player
+
 # Called when the node enters the scene tree for the first time.
 var submitted: bool
 var state: String
@@ -41,3 +44,13 @@ func _init(): #(selectedUnits: Dictionary)
 		"5": "Spy",
 		"6": "Builder", 
 		}
+
+func reset_values():
+	self.submitted = false
+	self.state = "SELECTING_UNIT"
+	self.selectedUnit = ""
+	self.orders = []
+	self.is_upgrading_memory = false
+	#self.researchingUnit = ""
+	self.currentlySpending = 0
+	print("RESET VALUES")

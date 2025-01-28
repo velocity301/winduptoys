@@ -4,8 +4,8 @@ extends Node2D
 class_name Unit
 const TWEEN_TIME = 0.7
 @onready var board = $"/root/Main/Board"
-
-# Properties for the unit
+signal move_completed
+# Unit properties
 var state: String
 var team: int
 var unitType: String
@@ -13,75 +13,36 @@ var boardPosition: Vector2
 var orders: Array = []
 var is_alive: bool
 var has_registered_move: bool
+
+# Movement directions and abilities for each unit type
 const UNIT_ORDERS = {
-	 "Worker": {
-		"N": Vector2(0, 1),
-		"E": Vector2(1, 0),
-		"S": Vector2(0, -1),
-		"W": Vector2(-1, 0),
-		"AN": Vector2(0, 0),
-		"AE": Vector2(0, 0),
-		"AS": Vector2(0, 0),
-		"AW": Vector2(0, 0),
+	"Worker": {
+		"N": Vector2(0, 1), "E": Vector2(1, 0), "S": Vector2(0, -1), "W": Vector2(-1, 0),
+		"AN": Vector2(0, 0), "AE": Vector2(0, 0), "AS": Vector2(0, 0), "AW": Vector2(0, 0),
 	},
 	"Soldier": {
-		"N": Vector2(0, 1),
-		"E": Vector2(1, 0),
-		"S": Vector2(0, -1),
-		"W": Vector2(-1, 0),
-		"AN": Vector2(0, 1),
-		"AE": Vector2(1, 0),
-		"AS": Vector2(0, -1),
-		"AW": Vector2(-1, 0),
+		"N": Vector2(0, 1), "E": Vector2(1, 0), "S": Vector2(0, -1), "W": Vector2(-1, 0),
+		"AN": Vector2(0, 1), "AE": Vector2(1, 0), "AS": Vector2(0, -1), "AW": Vector2(-1, 0),
 	},
 	"Archer": {
-		"N": Vector2(0, 1),
-		"E": Vector2(1, 0),
-		"S": Vector2(0, -1),
-		"W": Vector2(-1, 0),
-		"AN": Vector2(0, 0),
-		"AE": Vector2(0, 0),
-		"AS": Vector2(0, 0),
-		"AW": Vector2(0, 0),
+		"N": Vector2(0, 1), "E": Vector2(1, 0), "S": Vector2(0, -1), "W": Vector2(-1, 0),
+		"AN": Vector2(0, 0), "AE": Vector2(0, 0), "AS": Vector2(0, 0), "AW": Vector2(0, 0),
 	},
 	"Mage": {
-		"N": Vector2(-1, 1),  # Diagonal up-left
-		"E": Vector2(1, 1),   # Diagonal up-right
-		"S": Vector2(1, -1),  # Diagonal down-right
-		"W": Vector2(-1, -1), # Diagonal down-left
-		"AN": Vector2(0, 0),
-		"AE": Vector2(0, 0),
-		"AS": Vector2(0, 0),
-		"AW": Vector2(0, 0),
+		"N": Vector2(-1, 1), "E": Vector2(1, 1), "S": Vector2(1, -1), "W": Vector2(-1, -1),
+		"AN": Vector2(0, 0), "AE": Vector2(0, 0), "AS": Vector2(0, 0), "AW": Vector2(0, 0),
 	},
 	"Spy": {
-		"N": Vector2(0, 2),
-		"E": Vector2(2, 0),
-		"S": Vector2(0, -2),
-		"W": Vector2(-2, 0),
-		"AN": Vector2(0, 0),
-		"AE": Vector2(0, 0),
-		"AS": Vector2(0, 0),
-		"AW": Vector2(0, 0),
+		"N": Vector2(0, 2), "E": Vector2(2, 0), "S": Vector2(0, -2), "W": Vector2(-2, 0),
+		"AN": Vector2(0, 0), "AE": Vector2(0, 0), "AS": Vector2(0, 0), "AW": Vector2(0, 0),
 	},
 	"Builder": {
-		"N": Vector2(0, 1),
-		"E": Vector2(1, 0),
-		"S": Vector2(0, -1),
-		"W": Vector2(-1, 0),
-		"AN": Vector2(0, 0),
-		"AE": Vector2(0, 0),
-		"AS": Vector2(0, 0),
-		"AW": Vector2(0, 0),
+		"N": Vector2(0, 1), "E": Vector2(1, 0), "S": Vector2(0, -1), "W": Vector2(-1, 0),
+		"AN": Vector2(0, 0), "AE": Vector2(0, 0), "AS": Vector2(0, 0), "AW": Vector2(0, 0),
 	}
 }
 
-	
-func initialize(
-	team: int,
-	unitType: String, 
-	board_position: Vector2, 
-	orders: Array):
+func initialize(team: int, unitType: String, board_position: Vector2, orders: Array):
 	self.state = "IDLE"
 	self.team = team
 	self.unitType = unitType
@@ -89,54 +50,33 @@ func initialize(
 	self.orders = orders
 	self.is_alive = true
 	has_registered_move = false
-	
+
 func _ready():
 	board.connect("turn_completed", _on_all_moves_completed)
 
-# Executes ability orders (placeholder for specific logic)
 func execute_ability_order() -> void:
 	if self.unitType == "Worker":
-		pass  # Capture the mine or perform other actions
+		pass  # Placeholder for Worker-specific actions
 
-# Registers the move order with the board
 func execute_move_order() -> void:
-	if orders.size() == 0:
-		emit_signal("move_completed")
-		return
+	var current_order = orders[0]
+	var move_vector = UNIT_ORDERS[unitType].get(current_order, Vector2.ZERO)
+	var target_position = boardPosition + move_vector
+	var local_target_position = board.boardPositionToLocalPosition(target_position)
+	if not is_within_board(target_position):
+		target_position = boardPosition
+	board.register_move(self, target_position)
+	orders.pop_front()
+	self.has_registered_move = true
 
-	# Only process the first order
-	if orders.size() > 0:
-		var current_order = orders[0]  # Get the first order
-		print("Executing move order: " + current_order)  # Debug
-
-		var move_vector = UNIT_ORDERS[unitType].get(current_order, Vector2.ZERO)
-		print("Move vector: " + str(move_vector))  # Debug
-
-		var target_position = boardPosition + move_vector
-		print("Target position (board): " + str(target_position))  # Debug
-
-		# Convert to local position
-		var local_target_position = board.boardPositionToLocalPosition(target_position)
-		print("Target position (local): " + str(local_target_position))  # Debug
-
-		# Register the move with the board
-		board.register_move(self, target_position)
-
-		# Remove the first order after it's executed
-		orders.pop_front()  # Remove the first order
-		print("Remaining orders: " + str(orders))  # Debug
-		self.has_registered_move = true
-	else:
-		print("No orders to execute.")
-
-
-# Checks if a space is occupied (considering vacated spaces from the board)
 func is_space_occupied(space: Vector2) -> bool:
 	return board.is_space_occupied(space)
 
+func is_within_board(board_position: Vector2) -> bool:
+	return board_position.x >= 0 and board_position.x < board.BOARD_SIZE and board_position.y >= 0 and board_position.y < board.BOARD_SIZE
+
+
+
 func _on_all_moves_completed():
 	self.has_registered_move = false
-	self.state = "SELECTING_UNIT"
-
-# Signal emitted when a move is completed
-signal move_completed
+	self.state = "IDLE"

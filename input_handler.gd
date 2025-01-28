@@ -112,12 +112,14 @@ func submit_move(playerIndex):
 
 func check_submissions():
 	# Check if both players have submitted their orders
+	print("Checking Submissions")
 	if players[0].submitted and players[1].submitted:
 		# Emit signal to notify the board that both players have submitted their orders
-		both_players_submitted.emit(players)
 		players[0].state = "INPUT_DISABLED"
 		players[1].state = "INPUT_DISABLED"
-
+		both_players_submitted.emit(players)
+		
+	return
 
 func add_order(playerIndex, order: String):
 	if players[playerIndex].state != "ISSUING_ORDERS":
@@ -148,25 +150,41 @@ func back(playerIndex):
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	var player1 = Player.new()
-	var player2 = Player.new()
-	players.append(player1)
-	players.append(player2)
+	
 	# Connect the turn_completed signal to a function in another script
 	board.connect("turn_completed", _on_turn_completed)
-
+	start_game()
+	
 	#connect("both_players_submitted", get_node("$../Board"), "_on_both_players_submitted")
 	#for player in range(PLAYERCOUNT): 
 		#players.append(Player.new(units))
 
+func start_game():
+	var player1 = Player.new()
+	var player2 = Player.new()
+	players.append(player1)
+	players.append(player2)
+
+	
+func new_turn():
+	players[0].submitted = false
+	players[1].submitted = false
+	players[0].state = "SELECTING_UNIT"
+	players[1].state = "SELECTING_UNIT"
+	players[0].reset_values()
+	players[1].reset_values()	
+
 func _on_turn_completed():
 	print("Turn completed!")
+	new_turn()
 	# Handle any additional logic for after the turn ends (e.g., updating UI)
 
 
+
 func print_gamestate():
-	for playerIndex in range(2):
-		print(playerIndex)
+	pass
+	#for playerIndex in range(2):
+		#print(playerIndex)
 		#print("submitted: %s" % players[playerIndex].submitted)
 		#print("state: %s" % players[playerIndex].state)
 		#print("selectedUnit: %s" % players[playerIndex].selectedUnit)
