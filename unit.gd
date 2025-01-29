@@ -26,11 +26,11 @@ const UNIT_ORDERS = {
 	},
 	"Archer": {
 		"N": Vector2(0, 1), "E": Vector2(1, 0), "S": Vector2(0, -1), "W": Vector2(-1, 0),
-		"AN": Vector2(0, 0), "AE": Vector2(0, 0), "AS": Vector2(0, 0), "AW": Vector2(0, 0),
+		"AN": Vector2(0, 1), "AE": Vector2(1, 0), "AS": Vector2(0, -1), "AW": Vector2(-1, 0),
 	},
 	"Mage": {
 		"N": Vector2(-1, 1), "E": Vector2(1, 1), "S": Vector2(1, -1), "W": Vector2(-1, -1),
-		"AN": Vector2(0, 0), "AE": Vector2(0, 0), "AS": Vector2(0, 0), "AW": Vector2(0, 0),
+		"AN": Vector2(-1, 1), "AE": Vector2(1, 1), "AS": Vector2(1, -1), "AW": Vector2(-1, -1),
 	},
 	"Spy": {
 		"N": Vector2(0, 2), "E": Vector2(2, 0), "S": Vector2(0, -2), "W": Vector2(-2, 0),
@@ -39,6 +39,9 @@ const UNIT_ORDERS = {
 	"Builder": {
 		"N": Vector2(0, 1), "E": Vector2(1, 0), "S": Vector2(0, -1), "W": Vector2(-1, 0),
 		"AN": Vector2(0, 0), "AE": Vector2(0, 0), "AS": Vector2(0, 0), "AW": Vector2(0, 0),
+	},
+	"Wall": {
+		"X": Vector2(0,0)
 	}
 }
 
@@ -49,14 +52,21 @@ func initialize(team: int, unitType: String, board_position: Vector2, orders: Ar
 	self.boardPosition = board_position
 	self.orders = orders
 	self.is_alive = true
-	has_registered_move = false
+	self.has_registered_move = false
 
 func _ready():
 	board.connect("turn_completed", _on_all_moves_completed)
 
 func execute_ability_order() -> void:
-	if self.unitType == "Worker":
-		pass  # Placeholder for Worker-specific actions
+	var current_order = orders[0]
+	board.register_ability(self, current_order)
+	orders.pop_front()
+	self.has_registered_move = true
+	#if self.unitType == "Worker":
+		#
+		##if worker is on resource node, change it to the player's
+		#if self.boardPosition:
+			#pass
 
 func execute_move_order() -> void:
 	var current_order = orders[0]
@@ -65,9 +75,10 @@ func execute_move_order() -> void:
 	var local_target_position = board.boardPositionToLocalPosition(target_position)
 	if not is_within_board(target_position):
 		target_position = boardPosition
-	board.register_move(self, target_position)
-	orders.pop_front()
-	self.has_registered_move = true
+	if not self.has_registered_move:
+		board.register_move(self, target_position)
+		orders.pop_front()
+		self.has_registered_move = true
 
 func is_space_occupied(space: Vector2) -> bool:
 	return board.is_space_occupied(space)

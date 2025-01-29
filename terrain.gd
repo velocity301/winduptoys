@@ -1,0 +1,64 @@
+extends Node2D
+
+var resource_map: Array = []
+const RESOURCE_CHANCE = 0.25
+const MINIMUM_RESOURCE_NODES = 12
+@onready var board = $"/root/Main/Board"
+var terrain: Array
+const RESOURCE_NODE = preload("res://resource_node.tscn")
+
+func _ready() -> void:
+	generate_map()
+	create_terrain(resource_map)
+
+
+#func _process(delta: float) -> void:
+	#pass
+
+func generate_map():
+	resource_map = []
+	var resource_count = 0
+	for i in range(board.BOARD_SIZE):  # Use `i` for rows
+		var row = []
+		for j in range(board.BOARD_SIZE):  # Use `j` for columns
+			row.append(false)  # Initialize with `false`
+		resource_map.append(row)  # Add row to the resource map
+	
+	while resource_count < MINIMUM_RESOURCE_NODES / 2:
+		resource_count = 0
+		# Populate the board with resources
+		for x in range(board.BOARD_SIZE):
+			for y in range(board.BOARD_SIZE/2):
+				if randf() < RESOURCE_CHANCE:
+					resource_map[x][y] = true
+					resource_count += 1
+	# Apply rotational symmetry: for each (x, y), mirror it to (BOARD_SIZE - 1 - x, BOARD_SIZE - 1 - y)
+	for x in range(board.BOARD_SIZE):
+		for y in range(board.BOARD_SIZE):
+			if resource_map[x][y]:
+				resource_map[board.BOARD_SIZE - 1 - x][board.BOARD_SIZE - 1 - y] = true
+
+func create_terrain(resource_map):
+	for i in range(board.BOARD_SIZE):
+		for j in range(board.BOARD_SIZE):
+			var boardPosition = Vector2(i,j)
+			if resource_map[i][j] == true:
+				var resource_instance = RESOURCE_NODE.instantiate()
+				resource_instance.initialize(boardPosition)
+				resource_instance.position = board.boardPositionToLocalPosition(boardPosition)
+				terrain.append(resource_instance) 
+				self.add_child(resource_instance)
+			else:
+				pass
+
+func is_resource_node(space: Vector2):
+	for node in terrain:
+		if node.boardPosition == space:
+			return true
+	return false
+	
+
+func print_resource_map():
+	for row in resource_map:
+		print(row)
+	

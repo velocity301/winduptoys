@@ -112,7 +112,6 @@ func submit_move(playerIndex):
 
 func check_submissions():
 	# Check if both players have submitted their orders
-	print("Checking Submissions")
 	if players[0].submitted and players[1].submitted:
 		# Emit signal to notify the board that both players have submitted their orders
 		players[0].state = "INPUT_DISABLED"
@@ -175,7 +174,7 @@ func new_turn():
 	players[1].reset_values()	
 
 func _on_turn_completed():
-	print("Turn completed!")
+	#print("Turn completed!")
 	new_turn()
 	# Handle any additional logic for after the turn ends (e.g., updating UI)
 

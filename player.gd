@@ -31,8 +31,8 @@ func _init(): #(selectedUnits: Dictionary)
 	self.selectedUnit = ""
 	self.orders = []
 	self.income = 1
-	self.money = 1
-	self.memory = 1
+	self.money = 100
+	self.memory = 5
 	self.is_upgrading_memory = false
 	#self.researchingUnit = ""
 	self.currentlySpending = 0
@@ -53,4 +53,3 @@ func reset_values():
 	self.is_upgrading_memory = false
 	#self.researchingUnit = ""
 	self.currentlySpending = 0
-	print("RESET VALUES")
