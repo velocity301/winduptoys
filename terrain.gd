@@ -6,7 +6,7 @@ const MINIMUM_RESOURCE_NODES = 12
 @onready var board = $"/root/Main/Board"
 var terrain: Array
 const RESOURCE_NODE = preload("res://resource_node.tscn")
-
+const resource_node_script = preload("res://resource_node.gd")
 func _ready() -> void:
 	generate_map()
 	create_terrain(resource_map)
@@ -57,7 +57,19 @@ func is_resource_node(space: Vector2):
 			return true
 	return false
 	
-
+func get_resource_node_count(playerIndex):
+	if playerIndex == 0:
+		var count = 0
+		for node in terrain: 
+			if node.current_state == resource_node_script.State.PLAYER_0:
+				count += 1
+		return count
+	elif playerIndex == 1:
+		var count = 0 
+		for node in terrain:
+			if node.current_state == resource_node_script.State.PLAYER_1:
+				count += 1
+		return count
 func print_resource_map():
 	for row in resource_map:
 		print(row)

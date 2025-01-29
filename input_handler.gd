@@ -29,6 +29,8 @@ signal both_players_submitted(players: Array)  # Declare a signal
 
 
 func _input(event):
+	if event.is_action_pressed("PLAYER 2 FORCE END"):
+		submit_move(1)
 	var playerIndex = event.device
 	if players[event.device].state == "INPUT_DISABLED":
 		return
@@ -94,12 +96,12 @@ func upgrade_memory(playerIndex):
 	if players[playerIndex].state == "INPUT_DISABLED":
 		return
 	if players[playerIndex].is_upgrading_memory == true:
-		players[playerIndex].currentlySpending -= UPGRADE_COST
+		players[playerIndex].currentlySpending -= players[playerIndex].memory
 		players[playerIndex].is_upgrading_memory = false
-	elif availableMoney >= UPGRADE_COST and players[playerIndex].is_upgrading_memory == false:
-		players[playerIndex].currentlySpending += UPGRADE_COST
+	elif availableMoney >= players[playerIndex].memory and players[playerIndex].is_upgrading_memory == false:
+		players[playerIndex].currentlySpending += players[playerIndex].memory
 		players[playerIndex].is_upgrading_memory = true
-	elif availableMoney < UPGRADE_COST:
+	elif availableMoney < players[playerIndex].memory:
 		print("Insufficient Funds to Upgrade")
 
 func submit_move(playerIndex):

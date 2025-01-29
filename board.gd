@@ -135,6 +135,12 @@ func all_units_registered() -> bool:
 	return true
 
 func perform_turn(players) -> void:
+	#upgrades phase
+	for playerIndex in range(players.size()): 
+		if input_handler.players[playerIndex].is_upgrading_memory:
+			input_handler.players[playerIndex].money -= input_handler.players[playerIndex].memory
+			input_handler.players[playerIndex].memory += 1
+	
 	#captures phase
 	for unit in units:
 		if unit.orders.size() > 0:
@@ -216,5 +222,10 @@ func perform_turn(players) -> void:
 		if units[i].orders.size() == 0:
 			units[i].queue_free()
 			units.remove_at(i)  # Remove from the array
-
+	for playerIndex in range(players.size()):
+		pass
+		#print(terrain.get_resource_node_count(playerIndex))
+		input_handler.players[playerIndex].money += 1 + terrain.get_resource_node_count(playerIndex)
+		input_handler.players[playerIndex].income = 1 + terrain.get_resource_node_count(playerIndex)
+		print("ADDED MONEY TO PLAYER %d" % playerIndex)
 	emit_signal("turn_completed")
