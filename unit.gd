@@ -70,10 +70,25 @@ func _ready():
 	self.unit_sprite.texture = UNIT_SPRITES[unitType]
 
 func set_team_color(team):
+	var sprite = $UnitSprite  # Get the child node
+	if not sprite:
+		print("ERROR: unit_sprite not found!")
+		return
+	if not sprite.material or not (sprite.material is ShaderMaterial):
+		print("ERROR: unit_sprite does not have a ShaderMaterial!")
+		return
+	var shader_material = sprite.material as ShaderMaterial
+	var new_color
 	if team == 0:
-		modulate = Color(0, 0, 1)
-	elif team == 1:
-		modulate = Color(1, 0, 0)
+		new_color = Color(0, 0, 1, 1) 
+	if team == 1:
+		new_color = Color(0, 1, 0, 1)
+	
+	shader_material.set_shader_parameter("team_color", new_color)
+	print("Team color set to:", new_color)
+
+
+
 
 func execute_ability_order() -> void:
 	var current_order = orders[0]

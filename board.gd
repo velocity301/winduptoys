@@ -18,11 +18,6 @@ var units: Array
 var P1_submitted: bool
 var P2_submitted: bool
 var planned_moves: Dictionary = {}
-var planned_abilities: Dictionary = { 
-	"Captures": [],
-	"Walls": [],
-	"Attacks": [] 
-}
 var vacated_spaces: Array = []
 
 func _ready() -> void:
