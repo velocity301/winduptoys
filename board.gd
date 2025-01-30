@@ -10,7 +10,6 @@ signal turn_completed
 const UNIT = preload("res://unit.tscn")
 @onready var terrain: Node2D = $Terrain
 const ResourceNode = preload("res://resource_node.gd")
-const TANK = preload("res://Assets/P1Tank.png")
 const TEXTURE_HOLDER = preload("res://texture_holder.tscn")
 @onready var input_handler: Node2D = $"../InputHandler"
 
@@ -135,7 +134,7 @@ func all_units_registered() -> bool:
 	return true
 
 func perform_turn(players) -> void:
-	#upgrades phase
+	#upgrades phase upgrade cost = current memory
 	for playerIndex in range(players.size()): 
 		if input_handler.players[playerIndex].is_upgrading_memory:
 			input_handler.players[playerIndex].money -= input_handler.players[playerIndex].memory
@@ -146,6 +145,7 @@ func perform_turn(players) -> void:
 		if unit.orders.size() > 0:
 			if unit.orders[0].length() == 2 and unit.unitType == "Worker":
 				capture_space(unit)
+				register_move(unit, unit.boardPosition)
 				unit.has_registered_move = true
 	#walls phase
 	for unit in units:
@@ -163,6 +163,7 @@ func perform_turn(players) -> void:
 				if unit.orders[0] == "AW": 
 					if not is_space_occupied(unit.boardPosition + Vector2(-1,0)):	
 						spawn_unit(-1, "Wall", unit.boardPosition + Vector2(-1,0), ["X", "X", "X"])
+				register_move(unit, unit.boardPosition)
 				unit.has_registered_move = true
 	# TODO:attacks phase (hard)
 	for unit in units:
@@ -193,9 +194,11 @@ func perform_turn(players) -> void:
 						if not unit.is_within_board(magicPosition):
 							magic = false
 						magicPosition += magicDirection
+					
 				if unit.unitType == "Spy":
 					destroy_terrain(unit.boardPosition)
 				unit.orders.pop_front()
+				register_move(unit, unit.boardPosition)
 				unit.has_registered_move = true
 	#process killed units
 	process_killed_units()
@@ -227,5 +230,5 @@ func perform_turn(players) -> void:
 		#print(terrain.get_resource_node_count(playerIndex))
 		input_handler.players[playerIndex].money += 1 + terrain.get_resource_node_count(playerIndex)
 		input_handler.players[playerIndex].income = 1 + terrain.get_resource_node_count(playerIndex)
-		print("ADDED MONEY TO PLAYER %d" % playerIndex)
+		#print("ADDED MONEY TO PLAYER %d" % playerIndex)
 	emit_signal("turn_completed")

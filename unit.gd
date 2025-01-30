@@ -4,6 +4,7 @@ extends Node2D
 class_name Unit
 const TWEEN_TIME = 0.7
 @onready var board = $"/root/Main/Board"
+@onready var unit_sprite: Sprite2D = $UnitSprite
 signal move_completed
 # Unit properties
 var state: String
@@ -15,6 +16,14 @@ var is_alive: bool
 var has_registered_move: bool
 
 # Movement directions and abilities for each unit type
+const UNIT_SPRITES = {
+	"Worker": preload("res://Assets/Unit_Sprites/Worker.png"),
+	"Soldier": preload("res://Assets/Unit_Sprites/Soldier.png"),
+	"Archer": preload("res://Assets/Unit_Sprites/Archer.png"),
+	"Mage": preload("res://Assets/Unit_Sprites/Mage.png"),
+	"Spy": preload("res://Assets/Unit_Sprites/Spy.png"),
+	"Builder": preload("res://Assets/Unit_Sprites/Builder.png"),
+}
 const UNIT_ORDERS = {
 	"Worker": {
 		"N": Vector2(0, 1), "E": Vector2(1, 0), "S": Vector2(0, -1), "W": Vector2(-1, 0),
@@ -53,9 +62,18 @@ func initialize(team: int, unitType: String, board_position: Vector2, orders: Ar
 	self.orders = orders
 	self.is_alive = true
 	self.has_registered_move = false
+	set_team_color(team)
+	
 
 func _ready():
 	board.connect("turn_completed", _on_all_moves_completed)
+	self.unit_sprite.texture = UNIT_SPRITES[unitType]
+
+func set_team_color(team):
+	if team == 0:
+		modulate = Color(0, 0, 1)
+	elif team == 1:
+		modulate = Color(1, 0, 0)
 
 func execute_ability_order() -> void:
 	var current_order = orders[0]
