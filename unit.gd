@@ -38,8 +38,8 @@ const UNIT_ORDERS = {
 		"AN": Vector2(0, 1), "AE": Vector2(1, 0), "AS": Vector2(0, -1), "AW": Vector2(-1, 0),
 	},
 	"Mage": {
-		"N": Vector2(-1, 1), "E": Vector2(1, 1), "S": Vector2(1, -1), "W": Vector2(-1, -1),
-		"AN": Vector2(-1, 1), "AE": Vector2(1, 1), "AS": Vector2(1, -1), "AW": Vector2(-1, -1),
+		"N": Vector2(1, 1), "E": Vector2(1, -1), "S": Vector2(-1, -1), "W": Vector2(-1, 1),
+		"AN": Vector2(1, 1), "AE": Vector2(1, -1), "AS": Vector2(-1, -1), "AW": Vector2(-1, 1),
 	},
 	"Spy": {
 		"N": Vector2(0, 2), "E": Vector2(2, 0), "S": Vector2(0, -2), "W": Vector2(-2, 0),
@@ -71,18 +71,26 @@ func _ready():
 
 func set_team_color(team):
 	var sprite = $UnitSprite  # Get the child node
+	sprite.flip_h = (team == 1)
 	if not sprite:
 		print("ERROR: unit_sprite not found!")
 		return
-	if not sprite.material or not (sprite.material is ShaderMaterial):
+
+	# If sprite already has a material, create a duplicate
+	if sprite.material and sprite.material is ShaderMaterial:
+		sprite.material = sprite.material.duplicate(true)  # Deep copy to ensure a unique material
+	
+	var shader_material = sprite.material as ShaderMaterial
+	if not shader_material:
 		print("ERROR: unit_sprite does not have a ShaderMaterial!")
 		return
-	var shader_material = sprite.material as ShaderMaterial
-	var new_color
-	if team == 0:
-		new_color = Color(0, 0, 1, 1) 
-	if team == 1:
-		new_color = Color(0, 1, 0, 1)
+
+	# Set the team color
+	var new_color = Color(0, 1, 0, 1) if team == 0 else Color(1, 0, 0, 1)
+	shader_material.set_shader_parameter("team_color", new_color)
+	
+	sprite.queue_redraw()  # Ensure the material updates
+
 	
 	shader_material.set_shader_parameter("team_color", new_color)
 	print("Team color set to:", new_color)
@@ -113,8 +121,8 @@ func execute_move_order() -> void:
 		orders.pop_front()
 		self.has_registered_move = true
 
-func is_space_occupied(space: Vector2) -> bool:
-	return board.is_space_occupied(space)
+func is_space_occupied_movement(space: Vector2) -> bool:
+	return board.is_space_occupied_movement(space)
 
 func is_within_board(board_position: Vector2) -> bool:
 	return board_position.x >= 0 and board_position.x < board.BOARD_SIZE and board_position.y >= 0 and board_position.y < board.BOARD_SIZE

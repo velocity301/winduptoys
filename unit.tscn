@@ -11,4 +11,5 @@ shader_parameter/team_color = Vector4(1, 1, 1, 1)
 script = ExtResource("1_8quji")
 
 [node name="UnitSprite" type="Sprite2D" parent="."]
+z_index = 1
 material = SubResource("ShaderMaterial_fydiv")

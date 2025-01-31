@@ -5,6 +5,7 @@ const BOARD_SIZE = 8
 const CELL_WIDTH = 18
 const SPAWN_POSITIONS: Array = [Vector2(0, 0), Vector2(7, 7)]
 const TWEEN_TIME = 0.7
+@warning_ignore("unused_signal")
 signal turn_completed
 
 const UNIT = preload("res://unit.tscn")
@@ -45,6 +46,7 @@ func localPositionToBoardPosition(localPosition: Vector2) -> Vector2:
 func spawn_unit(team: int, unitType: String, boardPosition: Vector2, orders: Array) -> void:
 	if unitType == "":
 		return
+	destroy_unit(SPAWN_POSITIONS[team])
 	var unit_instance = UNIT.instantiate()
 	unit_instance.initialize(team, unitType, boardPosition, orders)
 	unit_instance.position = boardPositionToLocalPosition(boardPosition)
@@ -64,6 +66,7 @@ func register_move(unit: Unit, target_position: Vector2) -> void:
 
 func resolve_moves() -> void:
 	for target_position in planned_moves.keys():
+		@warning_ignore("shadowed_variable")
 		var units = planned_moves[target_position]
 		if units.size() == 1:
 			perform_move(units[0], target_position)
@@ -92,8 +95,37 @@ func attack_space(target_space: Vector2) -> void:
 	for unit in units:
 		if unit.boardPosition == target_space:
 			unit.is_alive = false
+			print(target_space)
 			#units.remove_at(i)  # Remove from the array
 
+func destroy_unit(target_space: Vector2) -> void:
+	for i in range(units.size()):
+		var unit = units[i]
+		if unit.boardPosition == target_space:
+			unit.queue_free() 
+			units.remove_at(i) 
+			break
+
+func draw_arrow_line(start_pos, end_pos, team):
+	var line = Line2D.new()
+	line.width = 3
+	if team == 0:
+		line.default_color = Color(0, 1, 0)
+	elif team == 1: 
+		line.default_color = Color(1, 0, 0)
+	line.add_point(boardPositionToLocalPosition(start_pos))
+	line.add_point(boardPositionToLocalPosition(end_pos))
+	self.add_child(line)
+	var timer = Timer.new()
+	timer.wait_time = 2.0
+	timer.one_shot = true
+	self.add_child(timer)
+	timer.start()
+	timer.timeout.connect(
+		func():
+		line.queue_free()
+		timer.queue_free()
+		)
 func process_killed_units() -> void:
 	for i in range(units.size() - 1, -1, -1):  # Iterate from last to first
 		if units[i].is_alive == false:
@@ -113,7 +145,7 @@ func resolve_abilities():
 func perform_abilities():
 	pass
 
-func is_space_occupied(space: Vector2) -> bool:
+func is_space_occupied_movement(space: Vector2) -> bool:
 	if space in vacated_spaces:
 		return false
 	for unit in units:
@@ -121,6 +153,11 @@ func is_space_occupied(space: Vector2) -> bool:
 			return true
 	return false
 
+func is_space_occupied(space: Vector2) -> bool:
+	for unit in units:
+		if unit.boardPosition == space:
+			return true
+	return false
 
 func all_units_registered() -> bool:
 	for unit in units:
@@ -147,16 +184,16 @@ func perform_turn(players) -> void:
 		if unit.orders.size() > 0:
 			if unit.orders[0].length() == 2 and unit.unitType == "Builder":
 				if unit.orders[0] == "AN": 
-					if not is_space_occupied(unit.boardPosition + Vector2(0,1)):
+					if not is_space_occupied_movement(unit.boardPosition + Vector2(0,1)):
 						spawn_unit(-1, "Wall", unit.boardPosition + Vector2(0,1), ["X", "X", "X"])
 				if unit.orders[0] == "AE": 
-					if not is_space_occupied(unit.boardPosition + Vector2(1,0)):
+					if not is_space_occupied_movement(unit.boardPosition + Vector2(1,0)):
 						spawn_unit(-1, "Wall", unit.boardPosition + Vector2(1,0), ["X", "X", "X"])
 				if unit.orders[0] == "AS": 
-						if not is_space_occupied(unit.boardPosition + Vector2(0,-1)):
+						if not is_space_occupied_movement(unit.boardPosition + Vector2(0,-1)):
 							spawn_unit(-1, "Wall", unit.boardPosition + Vector2(0,-1), ["X", "X", "X"])
 				if unit.orders[0] == "AW": 
-					if not is_space_occupied(unit.boardPosition + Vector2(-1,0)):	
+					if not is_space_occupied_movement(unit.boardPosition + Vector2(-1,0)):	
 						spawn_unit(-1, "Wall", unit.boardPosition + Vector2(-1,0), ["X", "X", "X"])
 				register_move(unit, unit.boardPosition)
 				unit.has_registered_move = true
@@ -167,6 +204,7 @@ func perform_turn(players) -> void:
 				if unit.unitType == "Soldier":
 					var target_space = unit.boardPosition + unit.UNIT_ORDERS[unit.unitType][unit.orders[0]]
 					attack_space(target_space)
+					
 				if unit.unitType == "Archer":
 					var arrow = true
 					var arrowDirection = unit.UNIT_ORDERS[unit.unitType][unit.orders[0]]
@@ -178,18 +216,21 @@ func perform_turn(players) -> void:
 						if not unit.is_within_board(arrowPosition):
 							arrow = false
 						arrowPosition += arrowDirection
+					draw_arrow_line(unit.boardPosition, arrowPosition, unit.team)
 				if unit.unitType == "Mage":
 					var magic = true
 					var magicDirection = unit.UNIT_ORDERS[unit.unitType][unit.orders[0]]
 					var magicPosition = unit.boardPosition + unit.UNIT_ORDERS[unit.unitType][unit.orders[0]]
 					while magic == true:
+						print(magicPosition)
 						if is_space_occupied(magicPosition):
 							attack_space(magicPosition)
 							magic = false
 						if not unit.is_within_board(magicPosition):
 							magic = false
 						magicPosition += magicDirection
-					
+					print(magicPosition)
+					draw_arrow_line(unit.boardPosition, magicPosition, unit.team)
 				if unit.unitType == "Spy":
 					destroy_terrain(unit.boardPosition)
 				unit.orders.pop_front()
@@ -204,9 +245,11 @@ func perform_turn(players) -> void:
 				unit.execute_move_order()
 	if all_units_registered():
 		resolve_moves()
+	#spawn units
 	spawn_unit(0, players[0].selectedUnit, SPAWN_POSITIONS[0], players[0].orders)
 	spawn_unit(1, players[1].selectedUnit, SPAWN_POSITIONS[1], players[1].orders)
 	#check victory condition phase
+	@warning_ignore("unused_variable")
 	var winner = 0
 	for unit in units:
 		if unit.boardPosition == Vector2(7,7) and unit.team == 0:
