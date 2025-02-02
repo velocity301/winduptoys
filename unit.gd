@@ -23,6 +23,7 @@ const UNIT_SPRITES = {
 	"Mage": preload("res://Assets/Unit_Sprites/Mage.png"),
 	"Spy": preload("res://Assets/Unit_Sprites/Spy.png"),
 	"Builder": preload("res://Assets/Unit_Sprites/Builder.png"),
+	"Wall":preload("res://Assets/Unit_Sprites/Wall.png")
 }
 const UNIT_ORDERS = {
 	"Worker": {
