@@ -1,12 +1,14 @@
 extends Node2D
 
-var resource_map: Array = []
+
 const RESOURCE_CHANCE = 0.25
 const MINIMUM_RESOURCE_NODES = 12
-@onready var board = $"/root/Main/Board"
-var terrain: Array
 const RESOURCE_NODE = preload("res://resource_node.tscn")
 const resource_node_script = preload("res://resource_node.gd")
+@onready var board = $"/root/Main/Board"
+var resource_map: Array = []
+var terrain: Array
+
 func _ready() -> void:
 	generate_map()
 	create_terrain(resource_map)
@@ -41,11 +43,11 @@ func generate_map():
 func create_terrain(resource_map):
 	for i in range(board.BOARD_SIZE):
 		for j in range(board.BOARD_SIZE):
-			var boardPosition = Vector2(i,j)
+			var board_position = Vector2(i,j)
 			if resource_map[i][j] == true:
 				var resource_instance = RESOURCE_NODE.instantiate()
-				resource_instance.initialize(boardPosition)
-				resource_instance.position = board.boardPositionToLocalPosition(boardPosition)
+				resource_instance.initialize(board_position)
+				resource_instance.position = board.board_to_local_pos(board_position)
 				terrain.append(resource_instance) 
 				self.add_child(resource_instance)
 			else:
@@ -53,7 +55,7 @@ func create_terrain(resource_map):
 
 func is_resource_node(space: Vector2):
 	for node in terrain:
-		if node.boardPosition == space:
+		if node.board_position == space:
 			return true
 	return false
 	

@@ -1,7 +1,7 @@
 # unit.gd
 extends Node2D
-
 class_name Unit
+
 const TWEEN_TIME = 0.7
 @onready var board = $"/root/Main/Board"
 @onready var unit_sprite: Sprite2D = $UnitSprite
@@ -9,11 +9,11 @@ signal move_completed
 # Unit properties
 var state: String
 var team: int
-var unitType: String
-var boardPosition: Vector2
+var unit_type: String
+var board_position: Vector2
 var orders: Array = []
 var is_alive: bool
-var has_registered_move: bool
+var has_registered_order: bool
 
 # Movement directions and abilities for each unit type
 const UNIT_SPRITES = {
@@ -25,6 +25,7 @@ const UNIT_SPRITES = {
 	"Builder": preload("res://Assets/Unit_Sprites/Builder.png"),
 	"Wall":preload("res://Assets/Unit_Sprites/Wall.png")
 }
+
 const UNIT_ORDERS = {
 	"Worker": {
 		"N": Vector2(0, 1), "E": Vector2(1, 0), "S": Vector2(0, -1), "W": Vector2(-1, 0),
@@ -55,20 +56,20 @@ const UNIT_ORDERS = {
 	}
 }
 
-func initialize(team: int, unitType: String, board_position: Vector2, orders: Array):
+func initialize(team: int, unit_type: String, board_position: Vector2, orders: Array):
 	self.state = "IDLE"
 	self.team = team
-	self.unitType = unitType
-	self.boardPosition = board_position
+	self.unit_type = unit_type
+	self.board_position = board_position
 	self.orders = orders
 	self.is_alive = true
-	self.has_registered_move = false
+	self.has_registered_order = false
 	set_team_color(team)
 	
 
 func _ready():
 	board.connect("turn_completed", _on_all_moves_completed)
-	self.unit_sprite.texture = UNIT_SPRITES[unitType]
+	self.unit_sprite.texture = UNIT_SPRITES[unit_type]
 
 func set_team_color(team):
 	var sprite = $UnitSprite  # Get the child node
@@ -96,40 +97,24 @@ func set_team_color(team):
 	shader_material.set_shader_parameter("team_color", new_color)
 	print("Team color set to:", new_color)
 
+#func execute_order() -> void:
+	#var current_order = orders[0]
+	#var move_vector = UNIT_ORDERS[unit_type].get(current_order, Vector2.ZERO)
+	#var target_position = board_position + move_vector
+	#var local_target_position = board.board_to_local_pos(target_position)
+	#if not is_within_board(target_position):
+		#target_position = board_position
+	#if not self.has_registered_move:
+		#board.register_move(self, target_position)
+		#orders.pop_front()
+		#self.has_registered_move = true
 
+func is_space_occupied_movement(space: Vector2) -> bool: # TODO: move to board.gd
+	return board.is_space_occupied_movement(space) 
 
-
-func execute_ability_order() -> void:
-	var current_order = orders[0]
-	board.register_ability(self, current_order)
-	orders.pop_front()
-	self.has_registered_move = true
-	#if self.unitType == "Worker":
-		#
-		##if worker is on resource node, change it to the player's
-		#if self.boardPosition:
-			#pass
-
-func execute_move_order() -> void:
-	var current_order = orders[0]
-	var move_vector = UNIT_ORDERS[unitType].get(current_order, Vector2.ZERO)
-	var target_position = boardPosition + move_vector
-	var local_target_position = board.boardPositionToLocalPosition(target_position)
-	if not is_within_board(target_position):
-		target_position = boardPosition
-	if not self.has_registered_move:
-		board.register_move(self, target_position)
-		orders.pop_front()
-		self.has_registered_move = true
-
-func is_space_occupied_movement(space: Vector2) -> bool:
-	return board.is_space_occupied_movement(space)
-
-func is_within_board(board_position: Vector2) -> bool:
+func is_within_board(board_position: Vector2) -> bool: # TODO: move to board.gd
 	return board_position.x >= 0 and board_position.x < board.BOARD_SIZE and board_position.y >= 0 and board_position.y < board.BOARD_SIZE
 
-
-
 func _on_all_moves_completed():
-	self.has_registered_move = false
+	self.has_registered_order = false
 	self.state = "IDLE"

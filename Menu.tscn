@@ -1,0 +1,49 @@
+[gd_scene load_steps=2 format=3 uid="uid://cmxjp5babuqko"]
+
+[ext_resource type="Script" path="res://menu.gd" id="1_1sirs"]
+
+[node name="Menu" type="Control"]
+layout_mode = 3
+anchor_left = 0.398
+anchor_top = 0.345
+anchor_right = 0.611
+anchor_bottom = 0.659
+offset_left = -458.496
+offset_top = -223.56
+offset_right = 448.128
+offset_bottom = 220.968
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_1sirs")
+
+[node name="TitleLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 527.0
+offset_top = 226.0
+offset_right = 627.0
+offset_bottom = 264.0
+text = "Windup Toys"
+
+[node name="HostButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 555.0
+offset_top = 287.0
+offset_right = 599.0
+offset_bottom = 318.0
+text = "Host"
+
+[node name="IPInput" type="LineEdit" parent="."]
+layout_mode = 0
+offset_left = 451.0
+offset_top = 337.0
+offset_right = 704.0
+offset_bottom = 368.0
+placeholder_text = "Enter IP Address"
+
+[node name="JoinButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 559.0
+offset_top = 379.0
+offset_right = 597.0
+offset_bottom = 410.0
+text = "Join"
