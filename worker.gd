@@ -1,5 +1,5 @@
 extends Unit
-class_name Worker
+class_name worker
 
 const UNIT_SPRITE = preload("res://Assets/Unit_Sprites/Worker.png")
 
@@ -11,7 +11,6 @@ var order_movement_map = {
 func execute_order() -> void:
 	var current_order = orders.pop_front()
 	var move_vector = order_movement_map.get(current_order, Vector2.ZERO)
-	if current_order.length() == 1:
-		board.register_movement(self, order_movement_map[current_order])
-	elif current_order.size() == 2:
+	board.register_movement(self, order_movement_map[current_order])
+	if current_order.length() == 2:
 		board.capture_space(self)

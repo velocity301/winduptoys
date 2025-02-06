@@ -2,7 +2,7 @@ extends Node2D
 
 
 const RESOURCE_CHANCE = 0.25
-const MINIMUM_RESOURCE_NODES = 12
+const MINIMUM_RESOURCE_NODES = 6
 const RESOURCE_NODE = preload("res://resource_node.tscn")
 const resource_node_script = preload("res://resource_node.gd")
 @onready var board = $"/root/Main/Board"

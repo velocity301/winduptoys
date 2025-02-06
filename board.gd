@@ -96,8 +96,7 @@ func attack_space(target_space: Vector2) -> void:
 	for unit in units:
 		if unit.board_position == target_space:
 			unit.is_alive = false
-			print(target_space)
-			#units.remove_at(i)  # Remove from the array
+
 
 func destroy_unit(target_space: Vector2) -> void:
 	for i in range(units.size()):
