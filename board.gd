@@ -3,6 +3,7 @@ extends Sprite2D
 
 const BOARD_SIZE = 5
 const CELL_WIDTH = 36
+const PLAYER_COUNT = 2
 const SPAWN_POSITIONS: Array = [Vector2(0, 0), Vector2(4, 4)]
 const TWEEN_TIME = 0.7
 const UNIT = preload("res://unit.tscn")
@@ -61,11 +62,12 @@ func register_movement(unit: Unit, target_position: Vector2) -> void:
 
 	if unit.board_position not in vacated_spaces:
 		vacated_spaces.append(unit.board_position)
-
-	if all_units_registered():
-		resolve_moves()
+	
+	unit.has_registered_order = true
 
 func resolve_moves() -> void:
+	for position in planned_moves.keys():
+		planned_moves[position] = planned_moves[position].filter(func(unit): return unit.is_alive)
 	for target_position in planned_moves.keys():
 		@warning_ignore("shadowed_variable")
 		var units = planned_moves[target_position]
@@ -82,6 +84,7 @@ func perform_move(unit: Unit, target_position: Vector2) -> void:
 	tween.tween_property(unit, "position", board_to_local_pos(target_position), Unit.TWEEN_TIME)
 	unit.board_position = target_position
 	unit.emit_signal("move_completed")
+	unit.has_registered_order = false
 
 func capture_space(unit: Unit) -> void:
 	var space = unit.board_position
@@ -169,95 +172,50 @@ func perform_turn(players) -> void:
 		if input_handler.players[playerIndex].is_upgrading_memory:
 			input_handler.players[playerIndex].money -= input_handler.players[playerIndex].memory
 			input_handler.players[playerIndex].memory += 1
-			
+	#wall standing phase
+	for unit in units:
+		if unit.unit_type == "Wall":
+			unit.execute_order()
+	
 	#captures phase
 	for unit in units:
 		if unit.unit_type == "Worker":
 			unit.execute_order()
 		
 		#if unit.orders.size() > 0:
-			#if unit.orders[0].length() == 2 and unit.unitType == "Worker":
+			#if unit.orders[0].length() == 2 and unit.unit_type == "Worker":
 				#capture_space(unit)
 				#register_move(unit, unit.board_position)
 				#unit.has_registered_order = true
 	#walls phase
 	for unit in units:
-		if unit.orders.size() > 0:
-			if unit.orders[0].length() == 2 and unit.unitType == "Builder":
-				if unit.orders[0] == "AN": 
-					if not is_space_occupied_movement(unit.board_position + Vector2(0,1)):
-						spawn_unit(-1, "Wall", unit.board_position + Vector2(0,1), ["X", "X", "X"])
-				if unit.orders[0] == "AE": 
-					if not is_space_occupied_movement(unit.board_position + Vector2(1,0)):
-						spawn_unit(-1, "Wall", unit.board_position + Vector2(1,0), ["X", "X", "X"])
-				if unit.orders[0] == "AS": 
-						if not is_space_occupied_movement(unit.board_position + Vector2(0,-1)):
-							spawn_unit(-1, "Wall", unit.board_position + Vector2(0,-1), ["X", "X", "X"])
-				if unit.orders[0] == "AW": 
-					if not is_space_occupied_movement(unit.board_position + Vector2(-1,0)):	
-						spawn_unit(-1, "Wall", unit.board_position + Vector2(-1,0), ["X", "X", "X"])
-				register_movement(unit, unit.board_position)
-				unit.has_registered_order = true
-	# TODO:attacks phase (hard)
+		if unit.unit_type == "Builder":
+			unit.execute_order()
+	# attacks phase
 	for unit in units:
-		if unit.orders.size() > 0:
-			if unit.orders[0].length() == 2:
-				if unit.unitType == "Soldier":
-					var target_space = unit.board_position + unit.UNIT_ORDERS[unit.unitType][unit.orders[0]]
-					attack_space(target_space)
-					
-				if unit.unitType == "Archer":
-					var arrow = true
-					var arrowDirection = unit.UNIT_ORDERS[unit.unitType][unit.orders[0]]
-					var arrowPosition = unit.board_position + unit.UNIT_ORDERS[unit.unitType][unit.orders[0]]
-					while arrow == true:
-						if is_space_occupied_ability(arrowPosition):
-							attack_space(arrowPosition)
-							arrow = false
-						if not unit.is_within_board(arrowPosition):
-							arrow = false
-						arrowPosition += arrowDirection
-					draw_arrow_line(unit.board_position, arrowPosition, unit.team)
-				if unit.unitType == "Mage":
-					var magic = true
-					var magicDirection = unit.UNIT_ORDERS[unit.unitType][unit.orders[0]]
-					var magicPosition = unit.board_position + unit.UNIT_ORDERS[unit.unitType][unit.orders[0]]
-					while magic == true:
-						print(magicPosition)
-						if is_space_occupied_ability(magicPosition):
-							attack_space(magicPosition)
-							magic = false
-						if not unit.is_within_board(magicPosition):
-							magic = false
-						magicPosition += magicDirection
-					print(magicPosition)
-					draw_arrow_line(unit.board_position, magicPosition, unit.team)
-				if unit.unitType == "Spy":
-					destroy_terrain(unit.board_position)
-				unit.orders.pop_front()
-				register_movement(unit, unit.board_position)
-				unit.has_registered_order = true
+		if unit.unit_type == "Soldier" or unit.unit_type == "Archer" or unit.unit_type == "Mage":
+			unit.execute_order()
+	# Spy phase
+	for unit in units:
+		if unit.unit_type == "Spy":
+			unit.execute_order()
 	#process killed units
 	process_killed_units()
 	#move phase
-	for unit in units:
-		if unit.orders.size() > 0:
-			if unit.orders[0].length() == 1:
-				unit.execute_move_order()
 	if all_units_registered():
 		resolve_moves()
 	#spawn units
-	spawn_unit(0, players[0].selectedUnit, SPAWN_POSITIONS[0], players[0].orders)
-	spawn_unit(1, players[1].selectedUnit, SPAWN_POSITIONS[1], players[1].orders)
+	for i in range(PLAYER_COUNT):
+		spawn_unit(i, players[i].selectedUnit, SPAWN_POSITIONS[i], players[i].orders)
 	#check victory condition phase
 	@warning_ignore("unused_variable")
 	var winner = 0
 	for unit in units:
-		if unit.board_position == Vector2(7,7) and unit.team == 0:
+		if unit.board_position == Vector2(4,4) and unit.team == 0:
 			winner += 1
 		if unit.board_position == Vector2(0,0) and unit.team == 1:
 			winner += 1
-	#print(winner)
+	print(winner)
 	winner = 0
 	#clear units without orders phase
 	for i in range(units.size() - 1, -1, -1):  # Iterate from last to first

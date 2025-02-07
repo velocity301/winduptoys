@@ -1,0 +1,15 @@
+[gd_scene load_steps=4 format=3 uid="uid://dqoh44aiky6fg"]
+
+[ext_resource type="Script" path="res://builder.gd" id="1_p8pe2"]
+[ext_resource type="Shader" path="res://Assets/Shaders/unit.gdshader" id="2_vpqc3"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_fydiv"]
+shader = ExtResource("2_vpqc3")
+shader_parameter/team_color = Vector4(1, 1, 1, 1)
+
+[node name="Unit" type="Node2D"]
+script = ExtResource("1_p8pe2")
+
+[node name="UnitSprite" type="Sprite2D" parent="."]
+z_index = 1
+material = SubResource("ShaderMaterial_fydiv")

@@ -11,6 +11,6 @@ var order_movement_map = {
 func execute_order() -> void:
 	var current_order = orders.pop_front()
 	var move_vector = order_movement_map.get(current_order, Vector2.ZERO)
-	board.register_movement(self, order_movement_map[current_order])
+	board.register_movement(self, board_position + move_vector)
 	if current_order.length() == 2:
 		board.capture_space(self)

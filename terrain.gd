@@ -39,7 +39,9 @@ func generate_map():
 		for y in range(board.BOARD_SIZE):
 			if resource_map[x][y]:
 				resource_map[board.BOARD_SIZE - 1 - x][board.BOARD_SIZE - 1 - y] = true
-
+	#spawn squares can't be resource nodes
+	resource_map[0][0] = false
+	resource_map[4][4] = false
 func create_terrain(resource_map):
 	for i in range(board.BOARD_SIZE):
 		for j in range(board.BOARD_SIZE):

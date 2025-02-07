@@ -1,0 +1,15 @@
+[gd_scene load_steps=4 format=3 uid="uid://cf23itpnwrwju"]
+
+[ext_resource type="Script" path="res://spy.gd" id="1_1dr2v"]
+[ext_resource type="Shader" path="res://Assets/Shaders/unit.gdshader" id="2_7k264"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_fydiv"]
+shader = ExtResource("2_7k264")
+shader_parameter/team_color = Vector4(1, 1, 1, 1)
+
+[node name="Unit" type="Node2D"]
+script = ExtResource("1_1dr2v")
+
+[node name="UnitSprite" type="Sprite2D" parent="."]
+z_index = 1
+material = SubResource("ShaderMaterial_fydiv")
