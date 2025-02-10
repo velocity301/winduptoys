@@ -1,5 +1,5 @@
 extends Unit
-class_name worker
+class_name Worker
 
 const UNIT_SPRITE = preload("res://Assets/Unit_Sprites/Worker.png")
 
