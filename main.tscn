@@ -33,7 +33,6 @@ shader_parameter/vignette_opacity = 0.5
 [node name="Main" type="Node2D"]
 
 [node name="Menu" parent="." instance=ExtResource("1_kgjds")]
-visible = false
 z_index = 20
 offset_left = -575.496
 offset_top = -292.56

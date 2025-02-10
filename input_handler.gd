@@ -1,6 +1,7 @@
 extends Node2D
 
 @onready var board: Sprite2D = $"../Board"
+@onready var menu = $"../Menu"
 
 const PLAYER = preload("res://player.tscn")
 const P1_SPAWN_POSITION: Vector2 = Vector2(0,0)
@@ -27,50 +28,55 @@ signal both_players_submitted(players: Array)  # Declare a signal
 	#"Clear Orders": ["clear_orders"]
 #}
 
-
 func _input(event):
+	var playerIndex
+	if multiplayer.get_unique_id() == 1:
+		playerIndex = 0 
+	elif multiplayer.get_unique_id() != 1:
+		playerIndex = 1
+		
 	if event.is_action_pressed("PLAYER 2 FORCE END"):
 		submit_move(1)
-	var playerIndex = event.device
-	if players[event.device].state == "INPUT_DISABLED":
+	
+	if players[playerIndex].state == "INPUT_DISABLED":
 		return
-	if players[event.device].state == "SELECTING_UNIT":
+	if players[playerIndex].state == "SELECTING_UNIT":
 		if event.is_action_pressed("Select Unit 1"):
-			select_unit(event.device, 1)
+			select_unit(playerIndex, 1)
 		if event.is_action_pressed("Select Unit 2"):
-			select_unit(event.device, 2)
+			select_unit(playerIndex, 2)
 		if event.is_action_pressed("Select Unit 3"):
-			select_unit(event.device, 3)
+			select_unit(playerIndex, 3)
 		if event.is_action_pressed("Select Unit 4"):
-			select_unit(event.device, 4)
+			select_unit(playerIndex, 4)
 		if event.is_action_pressed("Select Unit 5"):
-			select_unit(event.device, 5)
+			select_unit(playerIndex, 5)
 		if event.is_action_pressed("Select Unit 6"):
-			select_unit(event.device, 6)
-	elif players[event.device].state == "ISSUING_ORDERS":
+			select_unit(playerIndex, 6)
+	elif players[playerIndex].state == "ISSUING_ORDERS":
 		if event.is_action_pressed("Add Order N"):
-			add_order(event.device, "N")
+			add_order(playerIndex, "N")
 		if event.is_action_pressed("Add Order E"):
-			add_order(event.device, "E")
+			add_order(playerIndex, "E")
 		if event.is_action_pressed("Add Order S"):
-			add_order(event.device, "S")
+			add_order(playerIndex, "S")
 		if event.is_action_pressed("Add Order W"):
-			add_order(event.device, "W")
+			add_order(playerIndex, "W")
 		if event.is_action_pressed("Add Order AN"):
-			add_order(event.device, "AN")
+			add_order(playerIndex, "AN")
 		if event.is_action_pressed("Add Order AE"):
-			add_order(event.device, "AE")
+			add_order(playerIndex, "AE")
 		if event.is_action_pressed("Add Order AS"):
-			add_order(event.device, "AS")
+			add_order(playerIndex, "AS")
 		if event.is_action_pressed("Add Order AW"):
-			add_order(event.device, "AW")
+			add_order(playerIndex, "AW")
 	
 	if event.is_action_pressed("Upgrade Memory"):
-		upgrade_memory(event.device)
+		upgrade_memory(playerIndex)
 	if event.is_action_pressed("Submit Move"):
-		submit_move(event.device)
+		submit_move(playerIndex)
 	if event.is_action_pressed("Back"):
-		back(event.device)
+		back(playerIndex)
 	
 
 func test_action(playerIndex, action):
