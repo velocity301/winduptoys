@@ -38,8 +38,6 @@ func local_to_board_pos(local_position: Vector2) -> Vector2:
 	return board_position
 
 
-
-
 func spawn_unit(team: int, unit_type: String, board_position: Vector2, orders: Array) -> void:
 	if unit_type == "":
 		return
@@ -166,6 +164,7 @@ func all_units_registered() -> bool:
 			return false
 	return true
 
+@rpc("any_peer", "call_local", "reliable")
 func perform_turn(players) -> void:
 	#upgrades phase upgrade cost = current memory
 	for playerIndex in range(players.size()): 

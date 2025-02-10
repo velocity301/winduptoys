@@ -28,16 +28,22 @@ signal both_players_submitted(players: Array)  # Declare a signal
 	#"Clear Orders": ["clear_orders"]
 #}
 
-func _input(event):
+func get_player_index():
 	var playerIndex
 	if multiplayer.get_unique_id() == 1:
 		playerIndex = 0 
 	elif multiplayer.get_unique_id() != 1:
 		playerIndex = 1
+	return playerIndex
+		
+func _input(event):
+	var playerIndex = get_player_index()
 		
 	if event.is_action_pressed("PLAYER 2 FORCE END"):
 		submit_move(1)
-	
+	if event.is_action_pressed("Test Action"):
+		test_action(playerIndex, "TEST")
+		
 	if players[playerIndex].state == "INPUT_DISABLED":
 		return
 	if players[playerIndex].state == "SELECTING_UNIT":
@@ -78,13 +84,64 @@ func _input(event):
 	if event.is_action_pressed("Back"):
 		back(playerIndex)
 	
-
 func test_action(playerIndex, action):
 	print(playerIndex)
 	print(action)
 
+func serialize_players():
+	var serialized_players = []
+	for player in players:
+		serialized_players.append({
+			"submitted": player.submitted,
+			"state": player.state,
+			"selectedUnit": player.selectedUnit,
+			"orders": player.orders,
+			"income": player.income,
+			"money": player.money,
+			"memory": player.memory,
+			"is_upgrading_memory": player.is_upgrading_memory,
+			"currentlySpending": player.currentlySpending,
+			"unitDeck": player.unitDeck
+		})
+	return serialized_players
+
+func deserialize_players(serialized_players):
+	# Ensure the players array has the correct size
+	if players.size() != serialized_players.size():
+		print("Error: Mismatch in player count during deserialization")
+		return
+
+	# Update existing Player objects
+	for i in range(serialized_players.size()):
+		var player_data = serialized_players[i]
+		var player = players[i]
+		player.submitted = player_data["submitted"]
+		player.state = player_data["state"]
+		player.selectedUnit = player_data["selectedUnit"]
+		player.orders = player_data["orders"]
+		player.income = player_data["income"]
+		player.money = player_data["money"]
+		player.memory = player_data["memory"]
+		player.is_upgrading_memory = player_data["is_upgrading_memory"]
+		player.currentlySpending = player_data["currentlySpending"]
+		player.unitDeck = player_data["unitDeck"]
+		
+@rpc("authority", "reliable")
+func update_players(serialized_players):
+	# Deserialize the players data
+	deserialize_players(serialized_players)
+
+	# Optionally, update the UI or game state based on the new player data
+	print("Players data updated:", players)
+
 #Actions
+@rpc("any_peer", "reliable")
 func select_unit(playerIndex, unit: int):
+	if not multiplayer.is_server():
+		select_unit.rpc_id(1, playerIndex, unit)  # Forward request to host
+		return
+
+	# Ensure valid selection conditions
 	var availableMoney = players[playerIndex].money - players[playerIndex].currentlySpending
 	if availableMoney < UNIT_COSTS[unit]:
 		print("insufficient funds")
@@ -92,12 +149,21 @@ func select_unit(playerIndex, unit: int):
 	if players[playerIndex].state != "SELECTING_UNIT":
 		print("not in correct state")
 		return
+
+	# Apply selection logic on the host
 	players[playerIndex].selectedUnit = players[playerIndex].unitDeck[str(unit)]
 	players[playerIndex].currentlySpending += UNIT_COSTS[unit]
 	players[playerIndex].state = "ISSUING_ORDERS"
 
+	# Serialize players data and synchronize with all clients
+	var serialized_players = serialize_players()
+	update_players.rpc(serialized_players)
 	
+@rpc("any_peer", "reliable")
 func upgrade_memory(playerIndex):
+	if not multiplayer.is_server():
+		upgrade_memory.rpc_id(1, playerIndex)  # Forward request to host
+		return
 	var availableMoney = players[playerIndex].money - players[playerIndex].currentlySpending
 	if players[playerIndex].state == "INPUT_DISABLED":
 		return
@@ -109,26 +175,41 @@ func upgrade_memory(playerIndex):
 		players[playerIndex].is_upgrading_memory = true
 	elif availableMoney < players[playerIndex].memory:
 		print("Insufficient Funds to Upgrade")
+	var serialized_players = serialize_players()
+	update_players.rpc(serialized_players)
 
+@rpc("any_peer", "reliable")
 func submit_move(playerIndex):
+	if not multiplayer.is_server():
+		submit_move.rpc_id(1, playerIndex)  # Forward request to host
+		return
 	if players[playerIndex].state == "SUBMITTED_STANDBY" or players[playerIndex].state == "INPUT_DISABLED":
 		return
 	players[playerIndex].submitted = true
 	players[playerIndex].state = "SUBMITTED_STANDBY"
 	check_submissions()
+	var serialized_players = serialize_players()
+	update_players.rpc(serialized_players)
+	
 
-
+@rpc("any_peer", "reliable")
 func check_submissions():
 	# Check if both players have submitted their orders
 	if players[0].submitted and players[1].submitted:
 		# Emit signal to notify the board that both players have submitted their orders
 		players[0].state = "INPUT_DISABLED"
 		players[1].state = "INPUT_DISABLED"
+		var serialized_players = serialize_players()
+		update_players.rpc(serialized_players)
 		both_players_submitted.emit(players)
 		
 	return
 
+@rpc("any_peer", "reliable")
 func add_order(playerIndex, order: String):
+	if not multiplayer.is_server():
+		add_order.rpc_id(1, playerIndex, order)  # Forward request to host
+		return
 	if players[playerIndex].state != "ISSUING_ORDERS":
 		return
 	if players[playerIndex].orders.size() >= players[playerIndex].memory:
@@ -136,8 +217,14 @@ func add_order(playerIndex, order: String):
 		return
 	else:
 		players[playerIndex].orders.append(order)
+	var serialized_players = serialize_players()
+	update_players.rpc(serialized_players)
 
+@rpc("any_peer", "reliable")
 func back(playerIndex):
+	if not multiplayer.is_server():
+		back.rpc_id(1, playerIndex)  # Forward request to host
+		return
 	if players[playerIndex].state == "SELECTING_UNIT":
 		players[playerIndex].selectedUnit = ""
 		players[playerIndex].is_upgrading_memory = false
@@ -154,6 +241,8 @@ func back(playerIndex):
 		players[playerIndex].orders = []
 	elif players[playerIndex].state == "SUBMITTED_STANDBY":
 		players[playerIndex].state = "ISSUING_ORDERS"
+	var serialized_players = serialize_players()
+	update_players.rpc(serialized_players)
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -181,11 +270,11 @@ func new_turn():
 	players[0].reset_values()
 	players[1].reset_values()	
 
+
 func _on_turn_completed():
 	#print("Turn completed!")
 	new_turn()
 	# Handle any additional logic for after the turn ends (e.g., updating UI)
-
 
 
 func print_gamestate():
