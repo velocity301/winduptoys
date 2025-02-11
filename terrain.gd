@@ -1,6 +1,5 @@
 extends Node2D
 
-
 const RESOURCE_CHANCE = 0.25
 const MINIMUM_RESOURCE_NODES = 6
 const RESOURCE_NODE = preload("res://resource_node.tscn")
@@ -10,8 +9,10 @@ var resource_map: Array = []
 var terrain: Array
 
 func _ready() -> void:
-	generate_map()
-	create_terrain(resource_map)
+	pass
+	#generate_map()
+	#print_resource_map()
+	#create_terrain(resource_map)
 
 
 #func _process(delta: float) -> void:
@@ -74,6 +75,8 @@ func get_resource_node_count(playerIndex):
 			if node.current_state == resource_node_script.State.PLAYER_1:
 				count += 1
 		return count
+
+
 func print_resource_map():
 	for row in resource_map:
 		print(row)

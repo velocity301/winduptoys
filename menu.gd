@@ -1,12 +1,12 @@
-# menu.gd
-
 extends Control
 
 @onready var title_label = $TitleLabel
 @onready var host_button = $HostButton
 @onready var join_button = $JoinButton
 @onready var ip_input = $IPInput
-const IP_ADDRESS = "127.0.0.1"
+@onready var terrain: Node2D = $"../Board/Terrain"
+
+var ip_address = "127.0.0.1"
 
 func _ready():
 	# Connect button signals
@@ -16,23 +16,44 @@ func _ready():
 func _on_host_pressed():
 	# Create an ENetMultiplayerPeer as a server
 	var peer = ENetMultiplayerPeer.new()
-	var err = peer.create_server(8910, 2)  # Port 12345, max 8 players
+	var err = peer.create_server(8910, 2)  # Port 8910, max 2 players
 	if err != OK:
 		print("Failed to create server!")
 		return
 	
 	# Set the multiplayer peer
 	multiplayer.multiplayer_peer = peer
-	print("HOST")
+	print("HOST started")
+
+	# Connect signal to detect when a client joins
+	multiplayer.peer_connected.connect(_on_client_connected)
+
+	# Generate the map (but do not send it yet)
+	terrain.generate_map()
+	terrain.create_terrain(terrain.resource_map)
+
 	self.hide()
-	# Transition to the main game scene
+
+func _on_client_connected(client_id):
+	print("Client connected:", client_id)
+	# Send the map only to the newly connected client
+	rpc_id(client_id, "receive_map", terrain.resource_map)
+
 func _on_join_pressed():
+	ip_address = ip_input.text.strip_edges()
 	var peer = ENetMultiplayerPeer.new()
-	var err = peer.create_client(IP_ADDRESS, 8910)  # Port 12345, max 8 players
+	var err = peer.create_client(ip_address, 8910)  # Port 8910
 	if err != OK:
 		print("Failed to join server!")
+		return
+	
 	multiplayer.multiplayer_peer = peer
-	print("Joined ", IP_ADDRESS)
+	print("Joined ", ip_address)
 	self.hide()
-	# Change scene to the game (make sure "game.tscn" is the correct path)
-	#get_tree().change_scene_to_file("res://game.tscn")
+
+@rpc("authority", "reliable")
+func receive_map(received_map: Array):
+	# Update the terrain with the received map from the host
+	print("Received resource map from host:", received_map)
+	terrain.resource_map = received_map
+	terrain.create_terrain(terrain.resource_map)

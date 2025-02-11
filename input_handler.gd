@@ -11,7 +11,6 @@ const UPGRADE_COST = 1
 const UNIT_COSTS = [0,1,2,3,4,5,6]
 
 var players: Array = []
-
 signal both_players_submitted(players: Array)  # Declare a signal
 
 # "InputMapAction": ["ActionFunction","arg1", "arg2"]
@@ -39,10 +38,10 @@ func get_player_index():
 func _input(event):
 	var playerIndex = get_player_index()
 		
-	if event.is_action_pressed("PLAYER 2 FORCE END"):
-		submit_move(1)
-	if event.is_action_pressed("Test Action"):
-		test_action(playerIndex, "TEST")
+	#if event.is_action_pressed("PLAYER 2 FORCE END"):
+		#submit_move(1)
+	#if event.is_action_pressed("Test Action"):
+		#test_action(playerIndex, "TEST")
 		
 	if players[playerIndex].state == "INPUT_DISABLED":
 		return
@@ -132,7 +131,7 @@ func update_players(serialized_players):
 	deserialize_players(serialized_players)
 
 	# Optionally, update the UI or game state based on the new player data
-	print("Players data updated:", players)
+	#print("Players data updated:", players)
 
 #Actions
 @rpc("any_peer", "reliable")
@@ -187,13 +186,15 @@ func submit_move(playerIndex):
 		return
 	players[playerIndex].submitted = true
 	players[playerIndex].state = "SUBMITTED_STANDBY"
-	check_submissions()
 	var serialized_players = serialize_players()
 	update_players.rpc(serialized_players)
-	
+	check_submissions()
 
 @rpc("any_peer", "reliable")
 func check_submissions():
+	if not multiplayer.is_server():
+		return  # Only the host should handle this
+
 	# Check if both players have submitted their orders
 	if players[0].submitted and players[1].submitted:
 		# Emit signal to notify the board that both players have submitted their orders
@@ -201,9 +202,12 @@ func check_submissions():
 		players[1].state = "INPUT_DISABLED"
 		var serialized_players = serialize_players()
 		update_players.rpc(serialized_players)
-		both_players_submitted.emit(players)
-		
-	return
+
+		# Call perform_turn on the host and all clients
+		board.perform_turn.rpc(players)
+
+
+
 
 @rpc("any_peer", "reliable")
 func add_order(playerIndex, order: String):
@@ -225,6 +229,7 @@ func back(playerIndex):
 	if not multiplayer.is_server():
 		back.rpc_id(1, playerIndex)  # Forward request to host
 		return
+	players[playerIndex].submitted = false
 	if players[playerIndex].state == "SELECTING_UNIT":
 		players[playerIndex].selectedUnit = ""
 		players[playerIndex].is_upgrading_memory = false
@@ -270,7 +275,7 @@ func new_turn():
 	players[0].reset_values()
 	players[1].reset_values()	
 
-
+@rpc("any_peer", "reliable")
 func _on_turn_completed():
 	#print("Turn completed!")
 	new_turn()

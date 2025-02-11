@@ -95,7 +95,7 @@ func set_team_color(team):
 
 	
 	shader_material.set_shader_parameter("team_color", new_color)
-	print("Team color set to:", new_color)
+	#print("Team color set to:", new_color)
 
 #func execute_order() -> void:
 	#var current_order = orders[0]

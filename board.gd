@@ -54,6 +54,8 @@ func spawn_unit(team: int, unit_type: String, board_position: Vector2, orders: A
 	$Units.add_child(unit_instance)
 
 func register_movement(unit: Unit, target_position: Vector2) -> void:
+	if not unit.is_within_board(target_position):
+		target_position = unit.board_position
 	if !planned_moves.has(target_position):
 		planned_moves[target_position] = []
 	planned_moves[target_position].append(unit)
@@ -166,6 +168,7 @@ func all_units_registered() -> bool:
 
 @rpc("any_peer", "call_local", "reliable")
 func perform_turn(players) -> void:
+	print("perform_turn called by peer: ", multiplayer.get_unique_id())
 	#upgrades phase upgrade cost = current memory
 	for playerIndex in range(players.size()): 
 		if input_handler.players[playerIndex].is_upgrading_memory:
@@ -204,8 +207,9 @@ func perform_turn(players) -> void:
 	if all_units_registered():
 		resolve_moves()
 	#spawn units
+	var serialized_players = input_handler.serialize_players()
 	for i in range(PLAYER_COUNT):
-		spawn_unit(i, players[i].selectedUnit, SPAWN_POSITIONS[i], players[i].orders)
+		spawn_unit(i, serialized_players[i].selectedUnit, SPAWN_POSITIONS[i], serialized_players[i].orders)
 	#check victory condition phase
 	@warning_ignore("unused_variable")
 	var winner = 0
@@ -214,7 +218,7 @@ func perform_turn(players) -> void:
 			winner += 1
 		if unit.board_position == Vector2(0,0) and unit.team == 1:
 			winner += 1
-	print(winner)
+	#print(winner)
 	winner = 0
 	#clear units without orders phase
 	for i in range(units.size() - 1, -1, -1):  # Iterate from last to first
