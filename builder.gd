@@ -15,7 +15,7 @@ func execute_order() -> void:
 	var current_order = orders.pop_front()
 	var move_vector = order_movement_map.get(current_order, Vector2.ZERO)
 	board.register_movement(self, board_position + move_vector)
-	if current_order.length == 2:
+	if current_order.length() == 2:
 		var target_space = self.board_position + attack_map[current_order]
 		if not board.is_space_occupied_ability(target_space):
 			board.spawn_unit(self.team, "Wall", target_space, ["X"])

@@ -17,8 +17,8 @@ func execute_order() -> void:
 	board.register_movement(self, board_position + move_vector)
 	if current_order.length() == 2:
 		var projectile_position = self.board_position + attack_map[current_order]
-		while board.is_within_board(projectile_position):
-			if board.is_space_occupied(projectile_position):
+		while is_within_board(projectile_position):
+			if board.is_space_occupied_ability(projectile_position):
 				board.attack_space(projectile_position)
 				#animate projectile
 				break

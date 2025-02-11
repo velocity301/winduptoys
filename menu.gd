@@ -5,6 +5,7 @@ extends Control
 @onready var join_button = $JoinButton
 @onready var ip_input = $IPInput
 @onready var terrain: Node2D = $"../Board/Terrain"
+@onready var ui_container: Control = $"../UIContainer"
 
 var ip_address = "127.0.0.1"
 
@@ -31,13 +32,18 @@ func _on_host_pressed():
 	# Generate the map (but do not send it yet)
 	terrain.generate_map()
 	terrain.create_terrain(terrain.resource_map)
-
+	# Hide player 2 UI Elements besides Submitted, State, Memory, Money
+	$"../UIContainer/SelectedUnitLabel2".hide()
+	$"../UIContainer/OrdersLabel2".hide()
+	$"../UIContainer/IsUpgradingMemoryLabel2".hide()
+	$"../UIContainer/CurrentlySpendingLabel2".hide()
 	self.hide()
 
 func _on_client_connected(client_id):
 	print("Client connected:", client_id)
 	# Send the map only to the newly connected client
 	rpc_id(client_id, "receive_map", terrain.resource_map)
+	
 
 func _on_join_pressed():
 	ip_address = ip_input.text.strip_edges()
@@ -49,6 +55,13 @@ func _on_join_pressed():
 	
 	multiplayer.multiplayer_peer = peer
 	print("Joined ", ip_address)
+	
+	$"../UIContainer/SelectedUnitLabel".hide()
+	$"../UIContainer/OrdersLabel".hide()
+	$"../UIContainer/IsUpgradingMemoryLabel".hide()
+	$"../UIContainer/CurrentlySpendingLabel".hide()
+	
+	
 	self.hide()
 
 @rpc("authority", "reliable")

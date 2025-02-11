@@ -8,7 +8,9 @@ const P1_SPAWN_POSITION: Vector2 = Vector2(0,0)
 const P2_SPAWN_POSITION: Vector2 = Vector2(7,7)
 const PLAYERCOUNT: int = 2
 const UPGRADE_COST = 1
-const UNIT_COSTS = [0,1,2,3,4,5,6]
+const UNIT_COSTS = { 
+	"Worker": 3, "Soldier": 5, "Archer": 8, "Mage": 13, "Spy": 13, "Builder": 8
+	}
 
 var players: Array = []
 signal both_players_submitted(players: Array)  # Declare a signal
@@ -142,7 +144,7 @@ func select_unit(playerIndex, unit: int):
 
 	# Ensure valid selection conditions
 	var availableMoney = players[playerIndex].money - players[playerIndex].currentlySpending
-	if availableMoney < UNIT_COSTS[unit]:
+	if availableMoney < UNIT_COSTS[players[playerIndex].unitDeck[unit]]:
 		print("insufficient funds")
 		return
 	if players[playerIndex].state != "SELECTING_UNIT":
@@ -150,8 +152,8 @@ func select_unit(playerIndex, unit: int):
 		return
 
 	# Apply selection logic on the host
-	players[playerIndex].selectedUnit = players[playerIndex].unitDeck[str(unit)]
-	players[playerIndex].currentlySpending += UNIT_COSTS[unit]
+	players[playerIndex].selectedUnit = players[playerIndex].unitDeck[unit]
+	players[playerIndex].currentlySpending += UNIT_COSTS[players[playerIndex].unitDeck[unit]]
 	players[playerIndex].state = "ISSUING_ORDERS"
 
 	# Serialize players data and synchronize with all clients

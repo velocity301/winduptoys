@@ -15,7 +15,7 @@ func execute_order() -> void:
 	var current_order = orders.pop_front()
 	var move_vector = order_movement_map.get(current_order, Vector2.ZERO)
 	board.register_movement(self, board_position + move_vector)
-	if current_order.length == 2:
+	if current_order.length() == 2:
 		print("SPY ABILITY")
 		#destroy_terrain(self.board_position + attack_map[current_order])
 	

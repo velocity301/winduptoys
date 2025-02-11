@@ -169,11 +169,14 @@ func all_units_registered() -> bool:
 @rpc("any_peer", "call_local", "reliable")
 func perform_turn(players) -> void:
 	print("perform_turn called by peer: ", multiplayer.get_unique_id())
+	var serialized_players = input_handler.serialize_players()
 	#upgrades phase upgrade cost = current memory
 	for playerIndex in range(players.size()): 
 		if input_handler.players[playerIndex].is_upgrading_memory:
 			input_handler.players[playerIndex].money -= input_handler.players[playerIndex].memory
 			input_handler.players[playerIndex].memory += 1
+		#TODO: FIX COSTS
+		#input_handler.players[playerIndex].money -= input_handler.UNIT_COSTS[(serialized_players[playerIndex].selectedUnit)]
 	#wall standing phase
 	for unit in units:
 		if unit.unit_type == "Wall":
@@ -207,7 +210,7 @@ func perform_turn(players) -> void:
 	if all_units_registered():
 		resolve_moves()
 	#spawn units
-	var serialized_players = input_handler.serialize_players()
+	
 	for i in range(PLAYER_COUNT):
 		spawn_unit(i, serialized_players[i].selectedUnit, SPAWN_POSITIONS[i], serialized_players[i].orders)
 	#check victory condition phase

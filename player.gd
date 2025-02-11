@@ -35,12 +35,12 @@ func _init(): #(selectedUnits: Dictionary)
 	#self.researchingUnit = ""
 	self.currentlySpending = 0
 	self.unitDeck = {
-		"1": "Worker",
-		"2": "Soldier", 
-		"3": "Archer", 
-		"4": "Mage", 
-		"5": "Spy",
-		"6": "Builder", 
+		1: "Worker",
+		2: "Soldier", 
+		3: "Archer", 
+		4: "Mage", 
+		5: "Spy",
+		6: "Builder", 
 		}
 
 func reset_values():
