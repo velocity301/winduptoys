@@ -172,9 +172,10 @@ func perform_turn(players) -> void:
 	var serialized_players = input_handler.serialize_players()
 	#upgrades phase upgrade cost = current memory
 	for playerIndex in range(players.size()): 
-		if input_handler.players[playerIndex].is_upgrading_memory:
-			input_handler.players[playerIndex].money -= input_handler.players[playerIndex].memory
-			input_handler.players[playerIndex].memory += 1
+		input_handler.players[playerIndex].money -= serialized_players[playerIndex].currentlySpending
+		#if input_handler.players[playerIndex].is_upgrading_memory:
+			#input_handler.players[playerIndex].money -= input_handler.players[playerIndex].memory
+			#input_handler.players[playerIndex].memory += 1
 		#TODO: FIX COSTS
 		#input_handler.players[playerIndex].money -= input_handler.UNIT_COSTS[(serialized_players[playerIndex].selectedUnit)]
 	#wall standing phase
