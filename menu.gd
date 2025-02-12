@@ -6,6 +6,8 @@ extends Control
 @onready var ip_input = $IPInput
 @onready var terrain: Node2D = $"../Board/Terrain"
 @onready var ui_container: Control = $"../UIContainer"
+@onready var input_handler: Node2D = $"../InputHandler"
+
 
 var ip_address = "127.0.0.1"
 
@@ -43,7 +45,7 @@ func _on_client_connected(client_id):
 	print("Client connected:", client_id)
 	# Send the map only to the newly connected client
 	rpc_id(client_id, "receive_map", terrain.resource_map)
-	
+	input_handler.turn_timer.start()
 
 func _on_join_pressed():
 	ip_address = ip_input.text.strip_edges()

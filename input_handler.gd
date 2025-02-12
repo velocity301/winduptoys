@@ -2,7 +2,7 @@ extends Node2D
 
 @onready var board: Sprite2D = $"../Board"
 @onready var menu = $"../Menu"
-
+@onready var turn_timer = $"../TurnTimer"
 const PLAYER = preload("res://player.tscn")
 const P1_SPAWN_POSITION: Vector2 = Vector2(0,0)
 const P2_SPAWN_POSITION: Vector2 = Vector2(7,7)
@@ -257,6 +257,9 @@ func _ready() -> void:
 	# Connect the turn_completed signal to a function in another script
 	board.connect("turn_completed", _on_turn_completed)
 	start_game()
+	turn_timer.wait_time = 10  # Set the timer to 10 seconds
+	turn_timer.one_shot = false  # Make the timer repeat
+	turn_timer.connect("timeout", _on_turn_timer_timeout)
 	
 	#connect("both_players_submitted", get_node("$../Board"), "_on_both_players_submitted")
 	#for player in range(PLAYERCOUNT): 
@@ -267,6 +270,17 @@ func start_game():
 	var player2 = Player.new()
 	players.append(player1)
 	players.append(player2)
+	
+func _on_turn_timer_timeout():
+	if not players[0].submitted or not players[1].submitted:
+		# If either player hasn't submitted, mark them as submitted
+		players[0].submitted = true
+		players[1].submitted = true
+	print("Timeout: Both players will be treated as submitted.")
+
+	# Call check_submissions to proceed with the turn
+	check_submissions()
+
 
 	
 func new_turn():

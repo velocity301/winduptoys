@@ -1,10 +1,11 @@
-[gd_scene load_steps=7 format=3 uid="uid://c3lhkdftif36o"]
+[gd_scene load_steps=8 format=3 uid="uid://c3lhkdftif36o"]
 
 [ext_resource type="PackedScene" uid="uid://cmxjp5babuqko" path="res://Menu.tscn" id="1_kgjds"]
 [ext_resource type="PackedScene" uid="uid://dde7bj0ww5rxa" path="res://board.tscn" id="1_ricxw"]
 [ext_resource type="Shader" path="res://Assets/Shaders/CRT.gdshader" id="2_4o7yg"]
 [ext_resource type="PackedScene" uid="uid://dhbkst1jht01s" path="res://input_handler.tscn" id="2_38yic"]
 [ext_resource type="Script" path="res://ui_container.gd" id="3_vmdys"]
+[ext_resource type="Script" path="res://timer_label.gd" id="6_6ahga"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_bhs4u"]
 shader = ExtResource("2_4o7yg")
@@ -192,3 +193,13 @@ offset_bottom = 321.0
 theme_override_font_sizes/font_size = 150
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="TurnTimer" type="Timer" parent="."]
+wait_time = 10.0
+
+[node name="TimerLabel" type="Label" parent="TurnTimer"]
+offset_left = -50.0
+offset_top = -320.0
+offset_right = 110.0
+offset_bottom = -269.0
+script = ExtResource("6_6ahga")
