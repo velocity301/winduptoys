@@ -30,7 +30,7 @@ func _init(): #(selectedUnits: Dictionary)
 	self.orders = []
 	self.income = 1
 	self.money = 10
-	self.memory = 5
+	self.memory = 22
 	self.is_upgrading_memory = false
 	#self.researchingUnit = ""
 	self.currentlySpending = 0

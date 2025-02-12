@@ -88,12 +88,34 @@ func perform_move(unit: Unit, target_position: Vector2) -> void:
 
 func capture_space(unit: Unit) -> void:
 	var space = unit.board_position
-	if terrain.is_resource_node(unit.board_position):
+
+	if space == Vector2(4,4) and unit.team == 0:
+		declare_winner(1)  # Player 1 wins
+		return
+	elif space == Vector2(0,0) and unit.team == 1:
+		declare_winner(2)  # Player 2 wins
+		return
+
+	# If the space is a resource node, update its ownership
+	if terrain.is_resource_node(space):
 		for instance in terrain.terrain:
-			if unit.team == 0 and instance.board_position == space:
-				instance.set_state(RESOURCE_NODE.State.PLAYER_0)
-			elif unit.team == 1 and instance.board_position == space:
-				instance.set_state(RESOURCE_NODE.State.PLAYER_1)
+			if instance.board_position == space:
+				if unit.team == 0:
+					instance.set_state(RESOURCE_NODE.State.PLAYER_0)
+				elif unit.team == 1:
+					instance.set_state(RESOURCE_NODE.State.PLAYER_1)
+
+
+func declare_winner(player_number: int) -> void:
+	print("Player", player_number, "wins!")
+
+	# Show victory message
+	if $"../VictoryLabel":
+		$"../VictoryLabel".text = "Player " + str(player_number) + " Wins!"
+		$"../VictoryLabel".show()
+
+
+
 
 func attack_space(target_space: Vector2) -> void:
 	for unit in units:
@@ -173,11 +195,8 @@ func perform_turn(players) -> void:
 	#upgrades phase upgrade cost = current memory
 	for playerIndex in range(players.size()): 
 		input_handler.players[playerIndex].money -= serialized_players[playerIndex].currentlySpending
-		#if input_handler.players[playerIndex].is_upgrading_memory:
-			#input_handler.players[playerIndex].money -= input_handler.players[playerIndex].memory
-			#input_handler.players[playerIndex].memory += 1
-		#TODO: FIX COSTS
-		#input_handler.players[playerIndex].money -= input_handler.UNIT_COSTS[(serialized_players[playerIndex].selectedUnit)]
+		if serialized_players[playerIndex].is_upgrading_memory == true:
+			input_handler.players[playerIndex].memory += 1
 	#wall standing phase
 	for unit in units:
 		if unit.unit_type == "Wall":
@@ -215,15 +234,14 @@ func perform_turn(players) -> void:
 	for i in range(PLAYER_COUNT):
 		spawn_unit(i, serialized_players[i].selectedUnit, SPAWN_POSITIONS[i], serialized_players[i].orders)
 	#check victory condition phase
-	@warning_ignore("unused_variable")
-	var winner = 0
-	for unit in units:
-		if unit.board_position == Vector2(4,4) and unit.team == 0:
-			winner += 1
-		if unit.board_position == Vector2(0,0) and unit.team == 1:
-			winner += 1
-	#print(winner)
-	winner = 0
+	#var winner = 0
+	#for unit in units:
+		#if unit.board_position == Vector2(4,4) and unit.team == 0:
+			#winner += 1
+		#if unit.board_position == Vector2(0,0) and unit.team == 1:
+			#winner += 1
+	##print(winner)
+	#winner = 0
 	#clear units without orders phase
 	for i in range(units.size() - 1, -1, -1):  # Iterate from last to first
 		if units[i].orders.size() == 0:
