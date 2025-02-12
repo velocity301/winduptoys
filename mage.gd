@@ -24,3 +24,4 @@ func execute_order() -> void:
 				break
 			else:
 				projectile_position += attack_map[current_order]
+		board.draw_arrow_line(self.board_position, projectile_position, self.team)
